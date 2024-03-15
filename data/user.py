@@ -10,6 +10,7 @@ class User(SqlAlchemyBase, UserMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
+    role = sqlalchemy.Column(sqlalchemy.String, default='client')
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     birthday = sqlalchemy.Column(sqlalchemy.DateTime,
                                  default=datetime.datetime(1970, 1, 1))
