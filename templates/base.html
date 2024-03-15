@@ -17,11 +17,11 @@
         <a class="logo" href="/"><img src="../static/img/logo.png" alt="logo" width="300px" height="100px"></a>
         {% if current_user.is_authenticated %}
             <p class="navbar-brand">{{ current_user.name }}</p>
-            <a class="btn btn-primary " href="/logout">Logout</a>
+             <a class="img btn" href="/logout"><img src="../static/img/logout.png" alt="logo" width="180px" height="60px"></a>
         {% else %}
             <p>
-                <a class="btn btn-primary " href="/register">Register</a>
-                <a class="btn btn-success" href="/login">Login</a>
+                <a class="img btn" href="/register"><img src="../static/img/register.png" alt="Register" width="180px" height="60px"></a>
+                <a class="img btn" href="/login"><img src="../static/img/log_in.png" alt="logo" width="180px" height="60px"></a>
             </p>
         {% endif %}
     </nav>
