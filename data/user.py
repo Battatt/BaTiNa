@@ -12,8 +12,8 @@ class User(SqlAlchemyBase, UserMixin):
                            primary_key=True, autoincrement=True)
     role = sqlalchemy.Column(sqlalchemy.String, default='client')
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    birthday = sqlalchemy.Column(sqlalchemy.DateTime,
-                                 default=datetime.datetime(1970, 1, 1))
+    birthday = sqlalchemy.Column(sqlalchemy.Date,
+                                 default=datetime.date(1970, 1, 1))
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)

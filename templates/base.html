@@ -15,6 +15,15 @@
     <nav class="navbar navbar-light bg-light">
         <h1>BATINA</h1>
         <a class="btn btn-primary" href="/">BATINA</a>
+        {% if current_user.is_authenticated %}
+            <p class="navbar-brand">{{ current_user.name }}</p>
+            <a class="btn btn-primary " href="/logout">Logout</a>
+        {% else %}
+            <p>
+                <a class="btn btn-primary " href="/register">Register</a>
+                <a class="btn btn-success" href="/login">Login</a>
+            </p>
+        {% endif %}
     </nav>
 </header>
 
