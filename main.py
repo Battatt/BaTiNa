@@ -16,7 +16,7 @@ adminkey = "123456"
 @app.route('/')
 @app.route('/<title>')
 @app.route('/index/<title>')
-def index(title="main"):
+def index(title="Batina — интернет-магазин"):
     return render_template("index.html", title=title)
 
 
