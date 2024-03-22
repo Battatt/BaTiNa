@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect
 from flask_login import login_user, login_required, logout_user, LoginManager
+from io import BytesIO
 from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
@@ -52,6 +53,11 @@ def logout():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        #  profile_image = form.profile_image.data
+        #  image_stream = BytesIO()
+        #  profile_image.save(image_stream)
+        #  image_bytes = image_stream.getvalue()
+        #  print(image_bytes)  - не рабочая часть кода
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
                                    form=form,

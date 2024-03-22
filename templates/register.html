@@ -23,8 +23,17 @@
             {% endfor %}
         </p>
         <p>
+            {{ form.profile_image.label }}<br>
+            {{ form.profile_image(enctype="multipart/form-data", type="file", class="form-control-file") }}<br>
+            {% for error in form.profile_image.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
             {{ form.address.label }}<br>
-            {{ form.address(class="form-control", type="address") }}<br>
+            {{ form.address(class="form-control", type="address" ) }}<br>
             {% for error in form.address.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
@@ -35,15 +44,6 @@
             {{ form.birthday.label }}<br>
             {{ form.birthday(class="form-control", type="birthday") }}<br>
             {% for error in form.birthday.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.secret_key.label }}<br>
-            {{ form.secret_key(class="form-control", type="secret_key") }}<br>
-            {% for error in form.secret_key.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
