@@ -23,15 +23,6 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.profile_image.label }}<br>
-            {{ form.profile_image(enctype="multipart/form-data", type="file", class="form-control-file") }}<br>
-            {% for error in form.profile_image.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <p>
             {{ form.address.label }}<br>
             {{ form.address(class="form-control", type="address" ) }}<br>
             {% for error in form.address.errors %}
@@ -60,7 +51,7 @@
         </p>
         <p>
             {{ form.password_again.label }}<br>
-            {{ form.password_again(class="form-control", type="password_again") }}<br>
+            {{ form.password_again(class="form-control", type="password") }}<br>
             {% for error in form.password_again.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}

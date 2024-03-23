@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>ПРОФИЛЬ</h1>
+    <p>Имя: {{ user_data['name'] }}</p>
+    <p>Дата рождения: {{ user_data['birthday'] }}</p>
+    <p>Адрес: {{ user_data['address'] }}</p>
+    <p>Email: {{ user_data['email'] }}</p>
+    {% if current_user.id == user_id %}
+              {% if user_data["role"] == 2 %}
+                    Кнопка мои товары и кнопка добавить товар
+                {% else %}
+                    Добавить кнопку мои заказы
+                {% endif %}
+        {% else %}
+            {% if user_data["role"] == 2 %}
+                Товары продавца!!!!!!!
+            {% endif %}
+    {% endif %}
+{% endblock %}

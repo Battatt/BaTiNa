@@ -1,17 +1,22 @@
-from flask import Flask, render_template, redirect
-from flask_login import login_user, login_required, logout_user, LoginManager
-from io import BytesIO
+from flask import Flask, render_template, redirect, request
+from flask_login import login_user, login_required, logout_user, LoginManager, current_user
+from flask_restful import Api
+import requests
 from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
+from api import user_resource
 
 
 app = Flask(__name__)
+HOST, PORT = "127.0.0.1", 5000
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
-adminkey = "123456"
+api = Api(app)
+api.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
+admin_key = "123456"
 
 
 @app.route('/')
@@ -53,11 +58,6 @@ def logout():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        #  profile_image = form.profile_image.data
-        #  image_stream = BytesIO()
-        #  profile_image.save(image_stream)
-        #  image_bytes = image_stream.getvalue()
-        #  print(image_bytes)  - не рабочая часть кода
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
                                    form=form,
@@ -80,6 +80,22 @@ def register():
     return render_template('register.html', title='Регистрация', form=form)
 
 
-if __name__ == '__main__':
+@app.route("/profile/<int:user_id>")
+def profile(user_id):
+    response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
+    if response.status_code == 200:
+        user_data = response.json()
+        print(user_data)
+        # Дальнейшие действия с данными пользователя
+        return render_template("profile.html", title="Профиль",
+                               user_data=user_data["user"], user_id=user_id)
+    else:
+        return "AAAAAAAAAAA"
+
+def main():
     db_session.global_init("db/batina.db")
-    app.run(port=5000, host='127.0.0.1')
+    app.run(port=PORT, host=HOST)
+
+
+if __name__ == '__main__':
+    main()
