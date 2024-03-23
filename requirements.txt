@@ -1,4 +1,5 @@
 Flask
-sqlalchemy
-flask_login
-flask_wtf
+SQLAlchemy
+Werkzeug
+WTForms
+requests
