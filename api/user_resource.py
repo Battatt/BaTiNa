@@ -6,7 +6,7 @@ from flask import *
 
 class UserResource(Resource):
     def get(self, user_id):
-        abort_if_news_not_found(user_id)
+        abort_if_users_not_found(user_id)
         session = data.db_session.create_session()
         users = session.query(data.user.User).get(user_id)
         return jsonify({'user': {'address': users.address, 'birthday': users.birthday, 'email': users.email,
@@ -15,7 +15,7 @@ class UserResource(Resource):
                                  'profile_banner': users.profile_banner.hex()}})
 
     def delete(self, user_id):
-        abort_if_news_not_found(user_id)
+        abort_if_users_not_found(user_id)
         session = data.db_session.create_session()
         users = session.query(data.user.User).get(user_id)
         session.delete(users)
@@ -23,7 +23,7 @@ class UserResource(Resource):
         return jsonify({'success': 'OK'})
 
 
-def abort_if_news_not_found(user_id):
+def abort_if_users_not_found(user_id):
     session = data.db_session.create_session()
     users = session.query(data.user.User).get(user_id)
     if not users:

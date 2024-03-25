@@ -1,22 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>ПРОФИЛЬ</h1>
-    <img id="ItemPreviewAvatar" src="data:image/png;base64, {{ user_data['profile_photo'] }}" width="360px", height="360px">
-    <img id="ItemPreviewBanner" src="data:image/png;base64, {{ user_data['profile_banner'] }}" width="360px", height="360px">
-    <p>Имя: {{ user_data['name'] }}</p>
+    <h1>ПРОФИЛЬ {{ user_data['name'] }}</h1><br>
+    <img id="ItemPreviewBanner" src="data:image/png;base64,
+    {{ user_data['profile_banner'] }}" width="1240" height="420px"><br><br>
+    <img id="ItemPreviewAvatar" src="data:image/png;base64,
+    {{ user_data['profile_photo'] }}" width="128px" height="128px"><br><br>
     <p>Дата рождения: {{ user_data['birthday'] }}</p>
     <p>Адрес: {{ user_data['address'] }}</p>
     <p>Email: {{ user_data['email'] }}</p>
     {% if current_user.id == user_id %}
-              {% if user_data["role"] == 2 %}
+              {% if user_data["role"] == "2": %}
                     ЗАДАНИЕ: Кнопка мои товары и кнопка добавить товар
                 {% else %}
-                    ЗАДАНИЕ: Добавить кнопку мои заказы
+                    {% if user_data["role"] == "1" %}
+                        <a class="btn btn-primary" href="/orders">Мои заказы</a>
+                        <a class="btn btn-primary" href="/partnership">Сотрудничество</a>
+                    {% else %}
+                        УПРАВЛЕНИЕ АДМИНИСТРАЦИЕЙ
+                    {% endif %}
                 {% endif %}
         {% else %}
-            {% if user_data["role"] == 2 %}
+            {% if user_data["role"] == "2" %}
                 ЗАДАНИЕ: Товары продавца!!!!!!!
             {% endif %}
     {% endif %}
+    <a class="btn btn-danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
 {% endblock %}

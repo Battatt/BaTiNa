@@ -111,6 +111,26 @@ def profile(user_id):
         abort(404)
 
 
+@login_required
+@app.route("/user_delete/<int:user_id>")
+def delete_profile(user_id):
+    response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
+    if response.status_code == 200:
+        return redirect("/")
+    else:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
+        abort(401)
+
+
+@app.route("/partnership")
+def partnership():
+    return render_template("base.html", title="ПАРТНЕРСТВО")
+
+
+@app.route("/orders")
+def orders():
+    return render_template("base.html", title="ЗАКАЗЫ")
+
+
 def main():
     db_session.global_init("db/batina.db")
     app.run(port=PORT, host=HOST)
