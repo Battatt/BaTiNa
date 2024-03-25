@@ -9,7 +9,7 @@ class RegisterForm(FlaskForm):
     email = EmailField('E-mail', validators=[DataRequired()])
     name = StringField("Name", validators=[DataRequired()])
     address = StringField("Address")
-    birthday = DateField("Birthday(Year-month-day)", format='%Y-%m-%d')
+    birthday = DateField("Birthday(Day.Month.Year)", format='%d.%m.%Y')
     password = PasswordField('Password', validators=[DataRequired()])
     password_again = PasswordField('Repeat Password', validators=[DataRequired()])
     submit = SubmitField('Register')

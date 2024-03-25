@@ -14,7 +14,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     role = sqlalchemy.Column(sqlalchemy.String, default=1)  # 0-admin, 1-customer, 2-seller
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     birthday = sqlalchemy.Column(sqlalchemy.Date,
-                                 default=datetime.date(1970, 1, 1))
+                                 default=datetime.date(1970, 1, 1).strftime("%d.%m.%Y"))
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)

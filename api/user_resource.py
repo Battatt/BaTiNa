@@ -3,14 +3,16 @@ import data
 from flask import *
 
 
+
 class UserResource(Resource):
     def get(self, user_id):
         abort_if_news_not_found(user_id)
         session = data.db_session.create_session()
         users = session.query(data.user.User).get(user_id)
-        return jsonify({'user': users.to_dict(
-            only=('name', 'birthday', 'role', 'address', 'email', 'profile_photo',
-                  'profile_banner'))})
+        return jsonify({'user': {'address': users.address, 'birthday': users.birthday, 'email': users.email,
+                                 'name': users.name, 'role': users.role,
+                                 'profile_photo': users.profile_photo.hex(),
+                                 'profile_banner': users.profile_banner.hex()}})
 
     def delete(self, user_id):
         abort_if_news_not_found(user_id)
