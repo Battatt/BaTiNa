@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, abort
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
 import requests
@@ -67,11 +67,18 @@ def register():
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
+        avatar, banner = form.avatar.data.read(), form.banner.data.read()
+        if not avatar:
+            print("AAAAAAAAAAAAAA")
+        if not banner:
+            print("FFFFFFFFFFFFFFFFFFFF")
         user = User(
             name=form.name.data,
             email=form.email.data,
             birthday=form.birthday.data,
             address=form.address.data,
+            profile_photo=avatar,
+            profile_banner=banner
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -86,11 +93,11 @@ def profile(user_id):
     if response.status_code == 200:
         user_data = response.json()
         print(user_data)
-        # Дальнейшие действия с данными пользователя
         return render_template("profile.html", title="Профиль",
                                user_data=user_data["user"], user_id=user_id)
     else:
-        return "AAAAAAAAAAA"
+        abort(404)
+
 
 def main():
     db_session.global_init("db/batina.db")

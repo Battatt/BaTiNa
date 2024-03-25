@@ -4,6 +4,8 @@ from wtforms.validators import DataRequired
 
 
 class RegisterForm(FlaskForm):
+    avatar = FileField("Avatar-image")
+    banner = FileField("Banner-image")
     email = EmailField('E-mail', validators=[DataRequired()])
     name = StringField("Name", validators=[DataRequired()])
     address = StringField("Address")
