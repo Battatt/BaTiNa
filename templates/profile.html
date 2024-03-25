@@ -2,6 +2,8 @@
 
 {% block content %}
     <h1>ПРОФИЛЬ</h1>
+    <img id="ItemPreviewAvatar" src="data:image/png;base64, {{ user_data['profile_photo'] }}" width="360px", height="360px">
+    <img id="ItemPreviewBanner" src="data:image/png;base64, {{ user_data['profile_banner'] }}" width="360px", height="360px">
     <p>Имя: {{ user_data['name'] }}</p>
     <p>Дата рождения: {{ user_data['birthday'] }}</p>
     <p>Адрес: {{ user_data['address'] }}</p>

@@ -1,12 +1,15 @@
+import random
+
 from flask import Flask, render_template, redirect, abort
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
-import requests
 from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 from api import user_resource
+import requests
+import base64
 
 
 app = Flask(__name__)
@@ -69,9 +72,13 @@ def register():
                                    message="Такой пользователь уже есть")
         avatar, banner = form.avatar.data.read(), form.banner.data.read()
         if not avatar:
-            print("AAAAAAAAAAAAAA")
+            with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
+                f = image.read()
+                avatar = bytearray(f)
         if not banner:
-            print("FFFFFFFFFFFFFFFFFFFF")
+            with open("static/img/profile/banner.jpg", "rb") as image:
+                f = image.read()
+                banner = bytearray(f)
         user = User(
             name=form.name.data,
             email=form.email.data,
@@ -92,9 +99,14 @@ def profile(user_id):
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
     if response.status_code == 200:
         user_data = response.json()
-        print(user_data)
+        user_dict = dict()
+        for key, value in user_data["user"].items():
+            if not key.startswith("profile"):
+                user_dict[key] = value
+            else:
+                user_dict[key] = base64.b64encode(bytes.fromhex(value)).decode('ascii')
         return render_template("profile.html", title="Профиль",
-                               user_data=user_data["user"], user_id=user_id)
+                               user_data=user_dict, user_id=user_id)
     else:
         abort(404)
 
