@@ -1,7 +1,5 @@
-import random
-
 from flask import Flask, render_template, redirect, abort
-from flask_login import login_user, login_required, logout_user, LoginManager, current_user
+from flask_login import login_user, login_required, logout_user, LoginManager
 from flask_restful import Api
 from data import db_session
 from data.user import User
@@ -10,11 +8,17 @@ from forms.register_form import RegisterForm
 from api import user_resource
 import requests
 import base64
+import random
+import os
+from dotenv import load_dotenv
 
 
-app = Flask(__name__)
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+app = Flask(__name__)  # python -m flask --app main run --debug
 HOST, PORT = "127.0.0.1", 5000
-app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 login_manager = LoginManager()
 login_manager.init_app(app)
 api = Api(app)
@@ -23,16 +27,20 @@ admin_key = "123456"
 
 
 @app.route('/')
+def index():
+    return render_template("index.html")
+
+
 @app.route('/<title>')
 @app.route('/index/<title>')
-def index(title="Batina — интернет-магазин"):
-    return render_template("index.html", title=title)
+def other_page(title):
+    return redirect("/")
 
 
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
-    return db_sess.query(User).get(user_id)
+    return db_sess.get(User, user_id)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -40,7 +48,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()  # type: ignore[call-arg]
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
@@ -66,26 +74,24 @@ def register():
                                    form=form,
                                    message="Пароли не совпадают")
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
+        if db_sess.query(User).filter(User.email == form.email.data).first():  # type: ignore[call-arg]
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
         avatar, banner = form.avatar.data.read(), form.banner.data.read()
         if not avatar:
             with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
-                f = image.read()
-                avatar = bytearray(f)
+                avatar = bytearray(image.read())
         if not banner:
             with open("static/img/profile/banner.jpg", "rb") as image:
-                f = image.read()
-                banner = bytearray(f)
+                banner = bytearray(image.read())
         user = User(
-            name=form.name.data,
-            email=form.email.data,
-            birthday=form.birthday.data,
-            address=form.address.data,
-            profile_photo=avatar,
-            profile_banner=banner
+            name=form.name.data,  # type: ignore[call-arg]
+            email=form.email.data,  # type: ignore[call-arg]
+            birthday=form.birthday.data,  # type: ignore[call-arg]
+            address=form.address.data,  # type: ignore[call-arg]
+            profile_photo=avatar,  # type: ignore[call-arg]
+            profile_banner=banner  # type: ignore[call-arg]
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -134,6 +140,18 @@ def orders():
 def main():
     db_session.global_init("db/batina.db")
     app.run(port=PORT, host=HOST)
+
+
+@app.errorhandler(404)  # Add 401.html Unauthorized
+def not_found_error(error):
+    return render_template('404.html', message=error.description), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db_sess = db_session.create_session()
+    db_sess.rollback()
+    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':

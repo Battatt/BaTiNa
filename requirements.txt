@@ -7,3 +7,4 @@ SQLAlchemy
 Werkzeug
 WTForms
 requests
+python-dotenv
