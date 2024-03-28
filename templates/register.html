@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <div class="wrapper">
     <h1>Регистрация</h1>
     <form action="" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <p>
+        <div class="input-box">
             {{ form.email.label }}<br>
             {{ form.email(class="form-control", type="email") }}<br>
             {% for error in form.email.errors %}
@@ -12,8 +13,8 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-box">
             {{ form.name.label }}<br>
             {{ form.name(class="form-control", type="name") }}<br>
             {% for error in form.name.errors %}
@@ -21,8 +22,8 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-box">
             {{ form.address.label }}<br>
             {{ form.address(class="form-control", type="address" ) }}<br>
             {% for error in form.address.errors %}
@@ -30,17 +31,17 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-box">
             {{ form.birthday.label }}<br>
-            {{ form.birthday(class="form-control", type="birthday") }}<br>
+            {{ form.birthday(class="form-control", type="birthday", placeholder="01.01.1998") }}<br>
             {% for error in form.birthday.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-file">
             {{ form.banner.label }}<br>
             {{ form.banner(type="file") }}<br>
             {% for error in form.banner.errors %}
@@ -48,8 +49,8 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-file">
             {{ form.avatar.label }}<br>
             {{ form.avatar(type="file") }}<br>
             {% for error in form.avatar.errors %}
@@ -57,8 +58,8 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-box">
             {{ form.password.label }}<br>
             {{ form.password(class="form-control", type="password") }}<br>
             {% for error in form.password.errors %}
@@ -66,8 +67,8 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-box">
             {{ form.password_again.label }}<br>
             {{ form.password_again(class="form-control", type="password") }}<br>
             {% for error in form.password_again.errors %}
@@ -75,8 +76,9 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-        <div>{{ message }}</div>
+        </div>
+        <button type="submit" class="btn">Зарегистрироваться</button>
+        <div class="register-link">{{ message }}</div>
     </form>
+    </div>
 {% endblock %}

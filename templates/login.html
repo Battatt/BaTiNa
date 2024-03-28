@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Авторизация</h1>
+    <div class="wrapper">
+     <h1>Авторизация</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        <p>
+        <div class="input-box">
             {{ form.email.label }}<br>
-            {{ form.email(class="form-control", type="email") }}<br>
+            {{ form.email(class="form-control", type="email", placeholder="batina@mail.ru") }}<br>
             {% for error in form.email.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="input-box">
             {{ form.password.label }}<br>
             {{ form.password(class="form-control", type="password") }}<br>
             {% for error in form.password.errors %}
@@ -21,9 +22,13 @@
                     {{ error }}
                 </div>
             {% endfor %}
-        </p>
-        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
-        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-        <div>{{ message }}</div>
+        </div>
+        <div class="remember-forgot">{{ form.remember_me(type="checkbox") }} {{ form.remember_me.label }}</div>
+        <button type="submit" class="btn">Войти</button>
+        <div class="register-link">
+            <p>Нет аккаунта? <a href="/register">Регистрация</a><br>
+            {{ message }}</p>
+        </div>
     </form>
+    </div>
 {% endblock %}

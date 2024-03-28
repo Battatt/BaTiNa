@@ -1,33 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/profile.css">
+    <title>Batina — интернет-магазин</title>
+</head>
+<div class="container">
   <div class="profile">
-    <div class="banner" style="background-image: url('data:image/png;base64,{{ user_data['profile_banner'] }}');"></div>
+    <img class="banner" src="data:image/png;base64,{{ user_data['profile_banner'] }}">
     <img class="avatar" src="data:image/png;base64,{{ user_data['profile_photo'] }}" alt="User Avatar">
     <h1 class="username">{{ user_data['name'] }}</h1>
+    <div class="about_container">
     <p class="about_info">Дата рождения: {{ user_data['birthday'] }}</p>
     <p class="about_info">Адрес: {{ user_data['address'] }}</p>
     <p class="about_info">Email: {{ user_data['email'] }}</p>
+    </div>
+    <div class="btn_container">
     <!-- Add conditional buttons based on user's role and permissions -->
     {% if current_user.id == user_id %}
         <!-- Add buttons based on user's role -->
         {% if user_data["role"] == "2" %}
-            <a class="btn btn-primary" href="/my_products">Мои товары</a>
-            <a class="btn btn-primary" href="/add_product">Добавить товар</a>
+            <a class="btn-new" href="/my_products">Мои товары</a>
+            <a class="btn-new" href="/add_product">Добавить товар</a>
         {% else %}
             {% if user_data["role"] == "1" %}
-                <a class="btn btn-primary" href="/orders">Мои заказы</a>
-                <a class="btn btn-primary" href="/partnership">Сотрудничество</a>
+                <a class="btn-new" href="/orders">Мои заказы</a>
+                <a class="btn-new" href="/partnership">Сотрудничество</a>
             {% else %}
                 УПРАВЛЕНИЕ АДМИНИСТРАЦИЕЙ
             {% endif %}
         {% endif %}
-        <a class="btn btn-danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
+        <a class="btn-new danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
     {% else %}
         <!-- Add buttons based on user's role -->
         {% if user_data["role"] == "2" %}
             ЗАДАНИЕ: Товары продавца
         {% endif %}
     {% endif %}
+    </div>
   </div>
+</div>
 {% endblock %}

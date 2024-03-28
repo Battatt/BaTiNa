@@ -1,28 +1,150 @@
-.profile {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Fira Sans", sans-serif;
+
 }
-.banner {
-  width: 100%;
-  height: 100px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  margin-bottom: 20px;
+body {
+    display: flex;
+    min-height: 100vh;
+    background: white no-repeat;
+    background-size: cover;
+    justify-content: center;
+    align-items: center;
+    background-position: center;
 }
-.avatar {
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 5px solid #fff;
-  margin-top: -64px; /* Vertically center the avatar within the banner */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 100px;
+    background: #000000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    margin-bottom: 100px;
 }
-.username {
-  color: #333;
+.logo {
+    font-size: 32px;
+    text-decoration: none;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-decoration: none;
 }
-.about_info {
-  color: #666;
+.navbar a {
+    position: relative;
+    font-size: 18px;
+    font-weight: 500;
+    color: #FFFFFF;
+    text-decoration: none;
+    margin-left: 40px;
+}
+.navbar a::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #FFFFFF;
+    transition: .3s;
+}
+.navbar a:hover::before {
+    width: 100%;
+}
+.main {
+    margin-top: 100px;
+    justify-content: center;
+    align-items: center;
+}
+.wrapper {
+    background: transparent;
+    border: 2px solid #000000;
+    width: 480px;
+    background-color: #808080;
+    color: #000000;
+    border-radius: 30px;
+    padding: 30px 40px;
+}
+.wrapper h1 {
+    font-size: 36px;
+    text-align: center;
+}
+.wrapper .input-box {
+    width: 100%;
+    height: 50px;
+    margin: 30px 0 60px;
+}
+.wrapper .input-file {
+    width: 100%;
+    height: 50px;
+    margin: 30px 0 60px;
+}
+.input-file input {
+    height: 100%;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #000000;
+    padding: 30px 30px 0px 0px;
+}
+.input-box input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    border: 2px solid #696969;
+    border-radius: 40px;
+    font-size: 16px;
+    color: #000000;
+    padding: 20px 45px 20px 20px;
+}
+.input-box input::placeholder {
+    color: #D3D3D3;
+}
+.wrapper .remember-forgot {
+    display: flex;
+    justify-content: left;
+    font-size: 14.5px;
+    margin: 15px 0 15px;
+}
+.remember-forgot input {
+    ancient-color: #FFFFFF;
+    margin-right: 3px;
+}
+.remember-forgot a {
+    color: #FFFFFF;
+    text-decoration: none;
+}
+.wrapper .btn {
+    width: 100%;
+    height: 45px;
+    background: #FFFFFF;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    box-shadow: 0 0 10px #696969;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 50px;
+}
+.wrapper .register-link {
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+}
+.wrapper .register-link a {
+    text-decoration: none;
+    color: #FFFFFF;
+}
+#avatar_profile {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    outline: 3px solid #fff;
 }

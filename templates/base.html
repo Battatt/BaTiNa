@@ -5,30 +5,28 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
-    <link rel="stylesheet"
-          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-          crossorigin="anonymous">
     <title>Batina — интернет-магазин</title>
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-light bg-light">
-        <a class="logo" href="/"><img src="../static/img/logo.png" alt="logo" width="300px" height="100px"></a>
+<header class="header">
+    <a class="logo" href="/">BaTiNa</a>
+    <nav class="navbar">
         {% if current_user.is_authenticated %}
-              <a class="navbar-brand" href="/profile/{{ current_user.id }}">{{ current_user.name }}</a>
-             <a class="img btn" href="/logout"><img src="../static/img/logout.png" alt="logo" width="180px" height="60px"></a>
+        <a href="/profile/{{ current_user.id }}" class="profile_navbar"><img id="avatar_profile" src="data:image/png;base64,
+           {{ navbar_data['profile_photo'] }}"></a>
+        <a href="/profile/{{ current_user.id }}" class="profile_navbar">{{ navbar_data["name"] }}</a>
+        <a class="img btn" href="/logout">Выйти</a>
         {% else %}
             <p>
-                <a class="img btn" href="/register"><img src="../static/img/register.png" alt="Register" width="180px" height="60px"></a>
-                <a class="img btn" href="/login"><img src="../static/img/log_in.png" alt="logo" width="180px" height="60px"></a>
+                <a class="btn" href="/register">Регистрация</a>
+                <a class="btn" href="/login">Вход</a>
             </p>
         {% endif %}
     </nav>
 </header>
 
 <!-- Begin page content -->
-<main role="main" class="container">
+<main role="main" class="main">
     {% block content %}{% endblock %}
 </main>
 </body>

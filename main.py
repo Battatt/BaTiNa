@@ -5,6 +5,7 @@ from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
+from forms.partnership_form import PartnershipShip
 from api import user_resource, validate_location
 import requests
 import base64
@@ -29,8 +30,29 @@ api.add_resource(validate_location.PostOfficeResource, '/api/post_office/<string
 admin_key = "123456"
 
 
+def get_navbar_data(user_id):
+    response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
+    if response.status_code == 200:
+        user_data = response.json()
+        navbar_data = dict()
+        for key, value in user_data["user"].items():
+            if not key.startswith("profile"):
+                navbar_data[key] = value
+            else:
+                navbar_data[key] = base64.b64encode(bytes.fromhex(value)).decode('ascii')
+        return navbar_data
+    return None
+
+
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.id}')
+        if response.status_code == 200:
+            navbar_data = get_navbar_data(current_user.id)
+            return render_template("index.html", navbar_data=navbar_data)
+        else:
+            abort(404)
     return render_template("index.html")
 
 
@@ -129,16 +151,16 @@ def register():
 @app.route("/profile/<int:user_id>")
 def profile(user_id):
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
     if response.status_code == 200 and "status" not in response.json():
-        user_data = response.json()
-        user_dict = dict()
+        user_data, user_dict = response.json(), dict()
         for key, value in user_data["user"].items():
             if not key.startswith("profile"):
                 user_dict[key] = value
             else:
                 user_dict[key] = base64.b64encode(bytes.fromhex(value)).decode('ascii')
         return render_template("profile.html", title="Профиль",
-                               user_data=user_dict, user_id=user_id)
+                               user_data=user_dict, user_id=user_id, navbar_data=navbar_data)
     else:
         abort(404)
 
@@ -146,7 +168,7 @@ def profile(user_id):
 @login_required
 @app.route("/user_delete/<int:user_id>")
 def delete_profile(user_id):
-    if current_user.id == user_id:
+    if current_user.is_authenticated and current_user.id == user_id:
         if True:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
             pass
         response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
@@ -155,31 +177,45 @@ def delete_profile(user_id):
     return abort(401)
 
 
-@app.route("/partnership")
+@app.route("/partnership", methods=['GET', 'POST'])
 def partnership():
-    return render_template("base.html", title="ПАРТНЕРСТВО")
+    form = PartnershipShip()
+    if form.validate_on_submit():
+        return redirect("/")
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("partnership.html", title="ПАРТНЁРСТВО", form=form, navbar_data=navbar_data)
 
 
 @app.route("/orders")
 def orders():
-    return render_template("base.html", title="ЗАКАЗЫ")
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("base.html", title="ЗАКАЗЫ", navbar_data=navbar_data)
+
+
+@app.errorhandler(401)
+def not_found_error(error):
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template('401.html', message=error.description, navbar_data=navbar_data), 401
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template('404.html', message=error.description, navbar_data=navbar_data), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    """
+    db_sess = db_session.create_session()
+    db_sess.rollback()"""
+    return render_template('500.html', navbar_data=navbar_data), 500
 
 
 def main():
     db_session.global_init("db/batina.db")
     app.run(port=PORT, host=HOST)
-
-
-@app.errorhandler(404)  # Add 401.html Unauthorized
-def not_found_error(error):
-    return render_template('404.html'), 404
-
-
-@app.errorhandler(500)
-def internal_error(error):
-    db_sess = db_session.create_session()
-    db_sess.rollback()
-    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':

@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h1>Партнерство</h1>
+<form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>{{ form.passport() }} {{ form.passport.label }}</p>
+        <p>{{ form.bank_account() }} {{ form.bank_account.label }}</p>
 
 
-
+        <p>{{ form.license_agree() }} {{ form.license_agree.label }}</p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message }}</div>
+    </form>
 {% endblock %}
