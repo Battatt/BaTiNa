@@ -1,11 +1,11 @@
-from flask import Flask, render_template, redirect, abort
-from flask_login import login_user, login_required, logout_user, LoginManager
+from flask import Flask, render_template, redirect, abort, request
+from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
 from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
-from api import user_resource
+from api import user_resource, validate_location
 import requests
 import base64
 import random
@@ -23,6 +23,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 api = Api(app)
 api.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
+api.add_resource(validate_location.LocationResource, '/api/location/<string:address>')
+api.add_resource(validate_location.GeoIpResource, '/api/geoip/<string:ip>')
+api.add_resource(validate_location.PostOfficeResource, '/api/post_office/<string:postal_code>')
 admin_key = "123456"
 
 
@@ -78,6 +81,27 @@ def register():
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
+        loc_response = requests.get(f'http://{HOST}:{PORT}/api/location/{form.address.data}')
+        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{request.remote_addr}')
+        if loc_response.status_code == 200 and "status" not in loc_response.json() and \
+            len(loc_response.json()["results"]) and ip_response.status_code == 200 and \
+                "status" not in ip_response.json():  # If true, then the API worked properly
+            loc_json, ip_json = loc_response.json(), ip_response.json()
+            if loc_json["results"][0]["status"] >= 0.5 and \
+                    (request.remote_addr == "127.0.0.1" or
+                     loc_json["results"][0]["postcode"][:3] == ip_json["postcode"][:3]):
+                address = loc_json["results"][0]["formatted_address"]
+                post_resp = requests.get(f'http://{HOST}:{PORT}/api/post_office/{loc_json["results"][0]["postcode"]}')
+                if post_resp.status_code == 200 and "status" not in post_resp.json():
+                    post_office_address = post_resp.json()["address"]
+                else:
+                    post_office_address = address
+            else:
+                return render_template('register.html', title='Регистрация',
+                                       form=form, message="Введен неккоректный адрес")
+        else:
+            return render_template('register.html', title='Регистрация',
+                                   form=form, message="Произошла ошибка с проверкой адреса. Повторите позже")
         avatar, banner = form.avatar.data.read(), form.banner.data.read()
         if not avatar:
             with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
@@ -89,7 +113,9 @@ def register():
             name=form.name.data,  # type: ignore[call-arg]
             email=form.email.data,  # type: ignore[call-arg]
             birthday=form.birthday.data,  # type: ignore[call-arg]
-            address=form.address.data,  # type: ignore[call-arg]
+            address=address,  # type: ignore[call-arg]
+            post_office_address=post_office_address,  # type: ignore[call-arg]
+            ip=request.remote_addr,  # type: ignore[call-arg]
             profile_photo=avatar,  # type: ignore[call-arg]
             profile_banner=banner  # type: ignore[call-arg]
         )
@@ -103,7 +129,7 @@ def register():
 @app.route("/profile/<int:user_id>")
 def profile(user_id):
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
-    if response.status_code == 200:
+    if response.status_code == 200 and "status" not in response.json():
         user_data = response.json()
         user_dict = dict()
         for key, value in user_data["user"].items():
@@ -120,11 +146,13 @@ def profile(user_id):
 @login_required
 @app.route("/user_delete/<int:user_id>")
 def delete_profile(user_id):
-    response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
-    if response.status_code == 200:
-        return redirect("/")
-    else:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
-        abort(401)
+    if current_user.id == user_id:
+        if True:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
+            pass
+        response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
+        if response.status_code == 200 and "status" not in response.json():
+            return redirect("/")
+    return abort(401)
 
 
 @app.route("/partnership")
@@ -144,7 +172,7 @@ def main():
 
 @app.errorhandler(404)  # Add 401.html Unauthorized
 def not_found_error(error):
-    return render_template('404.html', message=error.description), 404
+    return render_template('404.html'), 404
 
 
 @app.errorhandler(500)

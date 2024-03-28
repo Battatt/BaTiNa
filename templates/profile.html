@@ -1,29 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>ПРОФИЛЬ {{ user_data['name'] }}</h1><br>
-    <img id="ItemPreviewBanner" src="data:image/png;base64,
-    {{ user_data['profile_banner'] }}" width="1240" height="420px"><br><br>
-    <img id="ItemPreviewAvatar" src="data:image/png;base64,
-    {{ user_data['profile_photo'] }}" width="128px" height="128px"><br><br>
-    <p>Дата рождения: {{ user_data['birthday'] }}</p>
-    <p>Адрес: {{ user_data['address'] }}</p>
-    <p>Email: {{ user_data['email'] }}</p>
+  <div class="profile">
+    <div class="banner" style="background-image: url('data:image/png;base64,{{ user_data['profile_banner'] }}');"></div>
+    <img class="avatar" src="data:image/png;base64,{{ user_data['profile_photo'] }}" alt="User Avatar">
+    <h1 class="username">{{ user_data['name'] }}</h1>
+    <p class="about_info">Дата рождения: {{ user_data['birthday'] }}</p>
+    <p class="about_info">Адрес: {{ user_data['address'] }}</p>
+    <p class="about_info">Email: {{ user_data['email'] }}</p>
+    <!-- Add conditional buttons based on user's role and permissions -->
     {% if current_user.id == user_id %}
-              {% if user_data["role"] == "2": %}
-                    ЗАДАНИЕ: Кнопка мои товары и кнопка добавить товар
-                {% else %}
-                    {% if user_data["role"] == "1" %}
-                        <a class="btn btn-primary" href="/orders">Мои заказы</a>
-                        <a class="btn btn-primary" href="/partnership">Сотрудничество</a>
-                    {% else %}
-                        УПРАВЛЕНИЕ АДМИНИСТРАЦИЕЙ
-                    {% endif %}
-                {% endif %}
+        <!-- Add buttons based on user's role -->
+        {% if user_data["role"] == "2" %}
+            <a class="btn btn-primary" href="/my_products">Мои товары</a>
+            <a class="btn btn-primary" href="/add_product">Добавить товар</a>
         {% else %}
-            {% if user_data["role"] == "2" %}
-                ЗАДАНИЕ: Товары продавца!!!!!!!
+            {% if user_data["role"] == "1" %}
+                <a class="btn btn-primary" href="/orders">Мои заказы</a>
+                <a class="btn btn-primary" href="/partnership">Сотрудничество</a>
+            {% else %}
+                УПРАВЛЕНИЕ АДМИНИСТРАЦИЕЙ
             {% endif %}
+        {% endif %}
+        <a class="btn btn-danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
+    {% else %}
+        <!-- Add buttons based on user's role -->
+        {% if user_data["role"] == "2" %}
+            ЗАДАНИЕ: Товары продавца
+        {% endif %}
     {% endif %}
-    <a class="btn btn-danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
+  </div>
 {% endblock %}

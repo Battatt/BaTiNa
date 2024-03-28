@@ -16,6 +16,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     birthday = sqlalchemy.Column(sqlalchemy.Date,
                                  default=datetime.date(1970, 1, 1).strftime("%d.%m.%Y"))
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    post_office_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    ip = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)
     profile_photo = sqlalchemy.Column(sqlalchemy.String, default="NULL")
