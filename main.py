@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, abort, request
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
+from werkzeug.middleware.proxy_fix import ProxyFix
 from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
@@ -18,6 +19,9 @@ dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 app = Flask(__name__)  # python -m flask --app main run --debug
+app.wsgi_app = ProxyFix(
+    app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+)
 HOST, PORT = "127.0.0.1", 5000
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 login_manager = LoginManager()
@@ -104,13 +108,16 @@ def register():
                                    form=form,
                                    message="Такой пользователь уже есть")
         loc_response = requests.get(f'http://{HOST}:{PORT}/api/location/{form.address.data}')
-        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{request.remote_addr}')
+        ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        if "," in ip:
+            ip = ip.split(",")[0]
+        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip}')
         if loc_response.status_code == 200 and "status" not in loc_response.json() and \
             len(loc_response.json()["results"]) and ip_response.status_code == 200 and \
                 "status" not in ip_response.json():  # If true, then the API worked properly
             loc_json, ip_json = loc_response.json(), ip_response.json()
             if loc_json["results"][0]["status"] >= 0.5 and \
-                    (request.remote_addr == "127.0.0.1" or
+                    (ip == "127.0.0.1" or
                      loc_json["results"][0]["postcode"][:3] == ip_json["postcode"][:3]):
                 address = loc_json["results"][0]["formatted_address"]
                 post_resp = requests.get(f'http://{HOST}:{PORT}/api/post_office/{loc_json["results"][0]["postcode"]}')
@@ -137,7 +144,7 @@ def register():
             birthday=form.birthday.data,  # type: ignore[call-arg]
             address=address,  # type: ignore[call-arg]
             post_office_address=post_office_address,  # type: ignore[call-arg]
-            ip=request.remote_addr,  # type: ignore[call-arg]
+            ip=ip,  # type: ignore[call-arg]
             profile_photo=avatar,  # type: ignore[call-arg]
             profile_banner=banner  # type: ignore[call-arg]
         )
