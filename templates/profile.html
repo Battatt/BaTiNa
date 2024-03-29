@@ -24,7 +24,6 @@
         <!-- Add buttons based on user's role -->
         {% if user_data["role"] == "2" %}
             <a class="btn-new" href="/my_products">Мои товары</a>
-            <a class="btn-new" href="/add_product">Добавить товар</a>
         {% else %}
             {% if user_data["role"] == "1" %}
                 <a class="btn-new" href="/orders">Мои заказы</a>

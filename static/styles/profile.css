@@ -1,10 +1,9 @@
-.container {
-  display: flex;
-  justify-content: center;
-}
 .btn_container {
   display: flex;
   justify-content: center;
+}
+.main {
+    width: 50%;
 }
 .profile {
   align-items: center;
