@@ -6,6 +6,7 @@
 }
 body {
     min-width: 600px;
+    width: expression( document.body.clientWidth < 600 ? "600px" : "auto" );
     display: flex;
     min-height: 100vh;
     background: white no-repeat;

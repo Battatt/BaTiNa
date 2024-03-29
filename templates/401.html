@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Вы не авторизованы</h1>
-    <p>Серверу не удалось проверить, есть ли у вас права доступа к запрошенному URL-адресу. Либо вы предоставили неправильные учетные данные (например, неверный пароль), либо ваш браузер не понимает, как предоставить необходимые учетные данные.</p>
-    <p><a href="{{ url_for('index') }}">Back</a></p>
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/error.css">
+    <title>Ошибка 401</title>
+</head>
+    <div class="error-container">
+        <h1 class="name">Вы не авторизованы</h1>
+        <p class="description">Серверу не удалось проверить, есть ли у вас права доступа к запрошенному URL-адресу. Либо вы предоставили неправильные учетные данные (например, неверный пароль), либо ваш браузер не понимает, как предоставить необходимые учетные данные.</p>
+        <br><br>
+        <a class="btn" href="{{ url_for('index') }}">Back</a>
+    </div>
 {% endblock %}

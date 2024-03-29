@@ -1,7 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Ошибка 404</h1>
-    <p>Что-то пошло не так.</p>
-    <p><a href="{{ url_for('index') }}">Back</a></p>
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/error.css">
+    <title>Ошибка 404</title>
+</head>
+    <div class="error-container">
+        <h1 class="name">Страница не найдена</h1>
+        <br><br>
+        <a class="btn" href="{{ url_for('index') }}">Back</a>
+    </div>
 {% endblock %}

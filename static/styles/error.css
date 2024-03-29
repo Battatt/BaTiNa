@@ -1,0 +1,31 @@
+body {
+    background-color: DimGrey; /* For browsers that do not support gradients */
+    background-image: linear-gradient(DimGrey, Silver);
+}
+.error-container {
+    display: block;
+    font-size: 26px;
+    color: #222;
+    width: 80%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+.btn {
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 0 3px transparent, 0 6px 20px rgba(18, 18, 18, 0.1);
+    color: #121212;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: box-shadow 0.2s, -webkit-box-shadow 0.2s;
+    border: 0;
+}
+.btn:hover {
+    box-shadow: 0 0 0 3px #121212, 0 0 0 0 transparent;
+}
