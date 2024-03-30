@@ -90,7 +90,7 @@ body {
     padding: 25px;
     width: 60%
     max-width: 85px;
-    left: 0;
+    left: -10000;
     z-index: 1000;
     background-color: black;
     box-shadow: 1px 0 3px -1px #4E4E51;
@@ -102,6 +102,7 @@ body {
     transition: opacity 500ms easy-in;
 }
 .navbar--visible {
+    left: 0;
     transition: opacity 500ms easy-in;
     opacity: 1;
 }
