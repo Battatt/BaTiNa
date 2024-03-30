@@ -33,7 +33,7 @@ body {
 .container{
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 20px;
 }
 .header_container {
     display: flex;
@@ -238,4 +238,23 @@ body {
     border-radius: 50%;
     object-fit: cover;
     outline: 3px solid #fff;
+}
+#disclaimer {
+    color:#F4A460;
+    font-size: 30px;
+}
+.container.text {
+    justify-content: space-between;
+    text-align: left;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.container.text a {
+    text-decoration: none;
+    color: #0f7afc;
+}
+.container.image {
+    display: block;
+    align-items: center;
 }
