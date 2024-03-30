@@ -3,6 +3,7 @@ from flask_login import login_user, login_required, logout_user, LoginManager, c
 from flask_restful import Api
 from flask_limiter import Limiter, RequestLimit
 from flask_limiter.util import get_remote_address
+from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 from api import user_resource
 from api import validate_location
@@ -12,8 +13,8 @@ from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 from forms.partnership_form import PartnershipShip
 from dotenv import load_dotenv
-import jinja2
 import requests
+import jinja2
 import base64
 import random
 import os
@@ -221,6 +222,12 @@ def orders():
     return render_template("base.html", title="ЗАКАЗЫ", navbar_data=navbar_data)
 
 
+@app.route("/admin_submission")
+def admin_submission():
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("base.html", title="Заявка на админа", navbar_data=navbar_data)
+
+
 @app.errorhandler(401)
 def not_found_error(error):
     navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
@@ -245,7 +252,7 @@ def internal_error(error):
 def main():
     db_session.global_init("db/batina.db")
     limiter.init_app(app)
-    app.run(port=PORT, host=HOST)
+    serve(app, host="0.0.0.0", port=PORT)
 
 
 if __name__ == '__main__':

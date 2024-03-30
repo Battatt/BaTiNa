@@ -7,5 +7,6 @@ SQLAlchemy-serializer
 SQLAlchemy
 Werkzeug
 WTForms
+waitress
 requests
 python-dotenv
