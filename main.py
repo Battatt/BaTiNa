@@ -1,18 +1,32 @@
-from flask import Flask, render_template, redirect, abort, request
+from flask import Flask, render_template, redirect, abort, request, make_response
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
+from flask_limiter import Limiter, RequestLimit
+from flask_limiter.util import get_remote_address
 from werkzeug.middleware.proxy_fix import ProxyFix
+from api import user_resource
+from api import validate_location
 from data import db_session
 from data.user import User
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 from forms.partnership_form import PartnershipShip
-from api import user_resource, validate_location
+from dotenv import load_dotenv
+import jinja2
 import requests
 import base64
 import random
 import os
-from dotenv import load_dotenv
+
+
+def default_error_responder(request_limit: RequestLimit):
+    error_template = jinja2.Environment().from_string(
+        """
+    <h1>Breached rate limit of: {{request_limit.limit}}</h1>
+    <h2>Path: {{request.path}}</h2>
+    """
+    )
+    return make_response(render_template(error_template, request_limit=request_limit))
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -22,18 +36,26 @@ app = Flask(__name__)  # python -m flask --app main run --debug
 app.wsgi_app = ProxyFix(
     app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
 )
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memory://",
+    on_breach=default_error_responder
+)
 HOST, PORT = "127.0.0.1", 5000
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 login_manager = LoginManager()
 login_manager.init_app(app)
-api = Api(app)
-api.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
-api.add_resource(validate_location.LocationResource, '/api/location/<string:address>')
-api.add_resource(validate_location.GeoIpResource, '/api/geoip/<string:ip>')
-api.add_resource(validate_location.PostOfficeResource, '/api/post_office/<string:postal_code>')
+api_app = Api(app)
+api_app.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
+limiter.limit("1/second")(user_resource.UserResource)  # Don't work
+api_app.add_resource(validate_location.LocationResource, '/api/location/<string:address>')
+api_app.add_resource(validate_location.GeoIpResource, '/api/geoip/<string:ip>')
+api_app.add_resource(validate_location.PostOfficeResource, '/api/post_office/<string:postal_code>')
 admin_key = "123456"
 
 
+@limiter.limit("5/second")
 def get_navbar_data(user_id):
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
     if response.status_code == 200:
@@ -222,6 +244,7 @@ def internal_error(error):
 
 def main():
     db_session.global_init("db/batina.db")
+    limiter.init_app(app)
     app.run(port=PORT, host=HOST)
 
 
