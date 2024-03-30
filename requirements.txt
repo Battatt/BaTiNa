@@ -2,6 +2,7 @@ Flask
 Flask-Login
 Flask-RESTful
 Flask-Limiter
+Flask-Discord
 flask_wtf
 SQLAlchemy-serializer
 SQLAlchemy
