@@ -216,6 +216,12 @@ def partnership():
     return render_template("partnership.html", title="ПАРТНЁРСТВО", form=form, navbar_data=navbar_data)
 
 
+@app.route('/agree')
+def agree():
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("agree.html", title="Соглашение", navbar_data=navbar_data)
+
+
 @app.route("/orders")
 def orders():
     navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
