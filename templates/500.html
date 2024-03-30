@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>An unexpected error has occurred</h1>
-    <p>The administrator has been notified. Sorry for the inconvenience!</p>
-    <p><a href="{{ url_for('index') }}">Back</a></p>
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/error.css">
+    <title>Ошибка 500</title>
+</head>
+    <div class="error-container">
+        <h1 class="name">An unexpected error has occurred</h1>
+        <p class="description">The administrator has been notified. Sorry for the inconvenience!</p>
+        <br><br>
+        <a class="btn" href="{{ url_for('index') }}">Back</a>
+    </div>
 {% endblock %}

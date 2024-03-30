@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="wrapper">
+     <h1>Заявка на права администратора</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="input-box">
+            {{ form.discord_account.label }}<br>
+            {{ form.discord_account(class="form-control", placeholder="@discord") }}<br>
+            {% for error in form.email.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="input-box">
+            {{ form.password.label }}<br>
+            {{ form.password(class="form-control", type="password") }}<br>
+            {% for error in form.password.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="remember-forgot">{{ form.remember_me(type="checkbox") }} {{ form.remember_me.label }}</div>
+        <button type="submit" class="btn">Войти</button>
+        <div class="register-link">
+            <p>Нет аккаунта? <a href="/register">Регистрация</a><br>
+            {{ message }}</p>
+        </div>
+    </form>
+    </div>
+{% endblock %}
