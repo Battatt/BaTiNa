@@ -228,6 +228,12 @@ def orders():
     return render_template("base.html", title="ЗАКАЗЫ", navbar_data=navbar_data)
 
 
+@app.route("/contacts")
+def contacts():
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("contacts.html", title="КОНТАКТЫ", navbar_data=navbar_data)
+
+
 @app.route("/admin_submission")
 def admin_submission():
     navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
