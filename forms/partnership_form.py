@@ -6,5 +6,5 @@ from wtforms.validators import DataRequired
 class PartnershipShip(FlaskForm):
     passport = StringField("Паспорт", validators=[DataRequired()])
     bank_account = StringField("Реквизиты банковского счёта", validators=[DataRequired()])
-    license_agree = BooleanField('Лицензия')
+    license_agree = BooleanField('Я согласен с пользовательским соглашением')
     submit = SubmitField('Подтвердить')

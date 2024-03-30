@@ -57,7 +57,7 @@ def index():
             return render_template("index.html", navbar_data=navbar_data)
         else:
             abort(404)
-    return render_template("index.html")
+    return render_template("index.html", title='Batina — интернет магазин')
 
 
 @app.route('/<title>')
