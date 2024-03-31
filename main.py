@@ -1,8 +1,9 @@
-from flask import Flask, render_template, redirect, abort, request, make_response
+from flask import Flask, render_template, redirect, abort, request, make_response, url_for
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
 from flask_limiter import Limiter, RequestLimit
 from flask_limiter.util import get_remote_address
+from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 from api import user_resource
@@ -30,6 +31,7 @@ def default_error_responder(request_limit: RequestLimit):
     return make_response(render_template(error_template, request_limit=request_limit))
 
 
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"  # !! Only in development environment.
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
@@ -45,6 +47,11 @@ limiter = Limiter(
 )
 HOST, PORT = "127.0.0.1", 5000
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
+app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
+app.config["DISCORD_REDIRECT_URI"] = f"http://{HOST}:{PORT}/oauth_callback"
+app.config["DISCORD_BOT_TOKEN"] = os.getenv("DISCORD_BOT_TOKEN")
+discord = DiscordOAuth2Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api_app = Api(app)
@@ -238,6 +245,37 @@ def contacts():
 def admin_submission():
     navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
     return render_template("base.html", title="Заявка на админа", navbar_data=navbar_data)
+
+
+@app.route("/discord_login")
+def discord_login():
+    return discord.create_session()
+
+
+@app.route("/oauth_callback")
+def callback():
+    discord.callback()
+    return redirect(url_for(".me"))
+
+
+@app.errorhandler(Unauthorized)
+def redirect_unauthorized(e):
+    return redirect(url_for("discord_login"))
+
+
+@app.route("/me")
+@requires_authorization
+def me():
+    user = discord.fetch_user()
+    return f"""
+    <html>
+        <head>
+            <title>{user.name}</title>
+        </head>
+        <body>
+            <img src='{user.avatar_url}' />
+        </body>
+    </html>"""
 
 
 @app.errorhandler(401)
