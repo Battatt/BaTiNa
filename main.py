@@ -13,6 +13,7 @@ from data.user import User
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 from forms.partnership_form import PartnershipShip
+from forms.admin_application_form import AdminForm
 from dotenv import load_dotenv
 import requests
 import jinja2
@@ -243,8 +244,17 @@ def contacts():
 
 @app.route("/admin_submission")
 def admin_submission():
+    form = AdminForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()  # type: ignore[call-arg]
+        if True:
+            pass
+        return render_template('admin_application.html',
+                               message="pass",
+                               form=form)
     navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
-    return render_template("base.html", title="Заявка на админа", navbar_data=navbar_data)
+    return render_template("admin_application.html", title="Заявка на админа", navbar_data=navbar_data, form=form)
 
 
 @app.route("/discord_login")
@@ -267,6 +277,7 @@ def redirect_unauthorized(e):
 @requires_authorization
 def me():
     user = discord.fetch_user()
+    user.add_to_guild(1086655956399697980)
     return f"""
     <html>
         <head>

@@ -11,37 +11,37 @@
 <body>
 <header class="header open">
     <div class="container header_container">
-    <button class="burger">
-        <span></span>
-    </button>
-    <a class="logo" href="/">BaTiNa</a>
-    <nav class="navbar">
-        <ul class="navbar_list">
-        {% if current_user.is_authenticated %}
-        <li class="navbar-item"><a href="/profile/{{ current_user.id }}" class="navbar_link_avatar"><img id="avatar_profile" src="data:image/png;base64,
-           {{ navbar_data['profile_photo'] }}"><br><br>
-        </a><a href="/profile/{{ current_user.id }}" class="navbar_link">{{ navbar_data["name"] }}</a></li>
-            {% if current_user.role == "2" %}
-                <li class="navbar-item"><a class="navbar_link" href="/my_products">Мои товары</a></li>
-            {% elif current_user.role == "1" %}
-                <li class="navbar-item"><a class="navbar_link" href="/favs">Избранное</a></li>
-                <li class="navbar-item"><a class="navbar_link" href="/orders">Мои заказы</a></li>
-                <li class="navbar-item"><a class="navbar_link" href="/partnership">Партнерство</a></li>
-                <li class="navbar-item"><a class="admin_link" href="/admin_submission">Заявка на администратора</a></li>
-            {% else %}
-            <li class="navbar-item"><a class="navbar_link " href="/admin">Ссылка для админов</a></li>
-            {% endif %}
-        <li class="navbar-item"><a class="navbar_link" href="/logout">Выйти</a></li>
-        {% else %}
-            <li class="navbar-item"><a class="navbar_link" href="/register">Регистрация</a></li>
-              <li class="navbar-item"><a class="navbar_link" href="/login">Вход</a></li>
-        {% endif %}
-            <li class="navbar-item"><a class="navbar_link" href="/contacts">Контакты</a></li>
-        </ul>
-    </nav>
+    <div class="navbar">
+    <div class="icon-bar" onclick="menu_show()">
+      <i></i>
+      <i></i>
+      <i></i>
     </div>
+    <a class="logo" href="/">BaTiNa</a>
+    <ul id="nav-lists">
+      <li class="close"><span onclick="menu_hide()">×</span></li>
+      {% if current_user.is_authenticated %}
+        <li><a href="/profile/{{ current_user.id }}" class="navbar_link"><img id="avatar_profile" src="data:image/png;base64,{{ navbar_data['profile_photo'] }}"><br>{{ navbar_data["name"] }}</a></li>
+            {% if current_user.role == "2" %}
+                <li><a href="/my_products" class="navbar_link">Мои товары</a></li>
+            {% elif current_user.role == "1" %}
+                <li><a href="/favs" class="navbar_link">Избранное</a></li>
+                <li><a href="/orders" class="navbar_link">Мои заказы</a></li>
+                <li><a href="/partnership" class="navbar_link">Партнерство</a></li>
+                <li><a href="/admin_submission" class="admin_link">Заявка на администратора</a></li>
+            {% else %}
+            <li><a href="/admin" class="navbar_link">Ссылка для админов</a></li>
+            {% endif %}
+        <li><a href="/logout" class="navbar_link">Выйти</a></li>
+        {% else %}
+            <li><a href="/register" class="navbar_link">Регистрация</a></li>
+              <li><a href="/login" class="navbar_link">Вход</a></li>
+        {% endif %}
+        <li><a href="/contacts" class="navbar_link">Контакты</a></li>
+    </ul>
+  </div>
+  </div>
 </header>
-
 <!-- Begin page content -->
 <main role="main" class="main">
     {% block content %}{% endblock %}
