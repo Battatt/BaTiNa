@@ -16,7 +16,7 @@ class Order(SqlAlchemyBase, SerializerMixin):
     item_id = orm.relationship('Item')
     start = sqlalchemy.Column(sqlalchemy.DateTime,
                               default=datetime.datetime.now())
-    end= sqlalchemy.Column(sqlalchemy.DateTime,
+    end = sqlalchemy.Column(sqlalchemy.DateTime,
                            default=datetime.datetime.now() + datetime.timedelta(days=2))
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
