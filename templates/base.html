@@ -43,8 +43,20 @@
   </div>
 </header>
 <!-- Begin page content -->
-<main role="main" class="main">
+<article role="main" class="main">
     {% block content %}{% endblock %}
-</main>
+</article>
+<footer>
+        <div class="footer-content">
+            <p>© 2024 BaTiNa</p>
+            <a id="upper" onclick="scrollToTop()">Наверх</a>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>

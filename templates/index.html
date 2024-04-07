@@ -1,5 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p>ЭТО ГЛАВНАЯ СТРАНИЦА</p>
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/items.css">
+    <title>{{title}}</title>
+</head>
+<div class="search-container">
+  <input type="text" id="search-input" placeholder="Поиск..." class="search-box">
+  <button type="button" id="search-button" class="search-button">Найти</button>
+</div>
+<ul class="products clearfix">
+	{% for i in range(10) %}
+	<li class="product-wrapper">
+		<a href="" class="product">
+		<div class="product-photo">
+			<img src="../static/img/profile/avatar_green.jpg" alt="">
+		</div>
+			<h1>Name</h1>
+			<p>Description, price</p>
+		</a>
+	</li>
+	{% endfor %}
+</ul>
 {% endblock %}

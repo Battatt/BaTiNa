@@ -1,0 +1,135 @@
+body {
+    background: white;
+    margin: 0;
+    padding: 0;
+    padding-top: 90px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+.main {
+    display: inline-block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    justify-content: space-between;
+    align-items: center;
+}
+.products.clearfix {
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px;
+    min-height: 300px;
+}
+.product-wrapper {
+	display: block;
+	width: 100%;
+	float: left;
+	transition: width .2s;
+}
+@media only screen and (min-width: 450px) {
+	.product-wrapper {
+		width: 50%;
+	}
+}
+
+@media only screen and (min-width: 768px) {
+	.product-wrapper {
+		width: 33.333%;
+	}
+}
+
+@media only screen and (min-width: 1000px) {
+	.product-wrapper {
+		width: 25%;
+	}
+}
+.product {
+	display: block;
+	border: 3px solid black;
+	border-radius: 9px;
+	position: relative;
+	background: #fff;
+	margin: 0 20px 20px 0;
+	text-decoration: none;
+	color: #474747;
+	z-index: 0;
+	height: 100%;
+	overflow: hidden;
+}
+.products {
+	list-style: none;
+	margin: 0 -20px 0 0;
+	padding: 0;
+}
+.product-photo {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+	position: relative;
+	padding-bottom: 100%;
+	overflow: hidden;
+}
+.product-photo img {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	max-width: 100%;
+	max-height: 100%;
+	margin: auto;
+	transition: transform .4s ease-out;
+}
+.product:hover .product-photo img {
+	transform: scale(1.05);
+}
+.product p {
+	position: relative;
+	padding 5px;
+	height: 20%;
+	margin: 0;
+	font-size: 1em;
+	line-height: 1.4em;
+	height: 5.6em;
+	overflow: hidden;
+}
+.product p:after {
+	content: '';
+	display: inline-block;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 4.2em;
+	height: 1.6em;
+	background: linear-gradient(to left top, #fff, rgba(255, 255, 255, 0));
+}
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 50px;
+}
+.search-box {
+  width: 75%;
+  height: 50px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px 0 0 5px;
+}
+.search-button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: 1px solid #4CAF50;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+}
+
+/* Стили при фокусе */
+.search-box:focus {
+  outline: none;
+  border-color: #4CAF50;
+}.search-button:hover {
+  background-color: #45a049;
+}

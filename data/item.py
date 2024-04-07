@@ -15,5 +15,6 @@ class Item(SqlAlchemyBase, SerializerMixin):
     price = sqlalchemy.Column(sqlalchemy.Integer)
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     image = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    is_visible = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
     category = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
