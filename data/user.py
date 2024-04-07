@@ -23,6 +23,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     profile_photo = sqlalchemy.Column(sqlalchemy.String, default="NULL")
     profile_banner = sqlalchemy.Column(sqlalchemy.String, default="NULL")
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    user_id = sqlalchemy.Column(sqlalchemy.BigInteger, nullable=True)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

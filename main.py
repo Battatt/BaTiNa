@@ -10,10 +10,11 @@ from api import user_resource
 from api import validate_location
 from data import db_session
 from data.user import User
+from forms.admin_application_form import AdminForm
+from forms.product_addition import ItemForm
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 from forms.partnership_form import PartnershipShip
-from forms.admin_application_form import AdminForm
 from dotenv import load_dotenv
 import requests
 import jinja2
@@ -82,9 +83,9 @@ def get_navbar_data(user_id):
 @app.route('/')
 def index():
     if current_user.is_authenticated:
-        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.id}')
+        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
         if response.status_code == 200:
-            navbar_data = get_navbar_data(current_user.id)
+            navbar_data = get_navbar_data(current_user.user_id)
             return render_template("index.html", navbar_data=navbar_data)
         else:
             abort(404)
@@ -134,7 +135,8 @@ def register():
                                    form=form,
                                    message="Пароли не совпадают")
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():  # type: ignore[call-arg]
+        user_table = db_sess.query(User)
+        if user_table.filter(User.email == form.email.data).first():  # type: ignore[call-arg]
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
@@ -169,6 +171,9 @@ def register():
         if not banner:
             with open("static/img/profile/banner.jpg", "rb") as image:
                 banner = bytearray(image.read())
+        while user_table.filter(User.user_id == (user_id := int.from_bytes(random.randbytes(4), "little"))).first():
+            # type: ignore[call-arg]
+            pass
         user = User(
             name=form.name.data,  # type: ignore[call-arg]
             email=form.email.data,  # type: ignore[call-arg]
@@ -177,7 +182,8 @@ def register():
             post_office_address=post_office_address,  # type: ignore[call-arg]
             ip=ip,  # type: ignore[call-arg]
             profile_photo=avatar,  # type: ignore[call-arg]
-            profile_banner=banner  # type: ignore[call-arg]
+            profile_banner=banner,  # type: ignore[call-arg]
+            user_id=user_id  # type: ignore[call-arg]
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -189,7 +195,7 @@ def register():
 @app.route("/profile/<int:user_id>")
 def profile(user_id):
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     if response.status_code == 200 and "status" not in response.json():
         user_data, user_dict = response.json(), dict()
         for key, value in user_data["user"].items():
@@ -206,7 +212,7 @@ def profile(user_id):
 @login_required
 @app.route("/user_delete/<int:user_id>")
 def delete_profile(user_id):
-    if current_user.is_authenticated and current_user.id == user_id:
+    if current_user.is_authenticated and current_user.user_id == user_id:
         if True:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
             pass
         response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
@@ -220,29 +226,30 @@ def partnership():
     form = PartnershipShip()
     if form.validate_on_submit():
         return redirect("/")
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("partnership.html", title="ПАРТНЁРСТВО", form=form, navbar_data=navbar_data)
 
 
 @app.route('/agree')
 def agree():
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("agree.html", title="Соглашение", navbar_data=navbar_data)
 
 
 @app.route("/orders")
 def orders():
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("base.html", title="ЗАКАЗЫ", navbar_data=navbar_data)
 
 
 @app.route("/contacts")
 def contacts():
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("contacts.html", title="КОНТАКТЫ", navbar_data=navbar_data)
 
 
 @app.route("/admin_submission")
+@requires_authorization
 def admin_submission():
     form = AdminForm()
     if form.validate_on_submit():
@@ -253,7 +260,7 @@ def admin_submission():
         return render_template('admin_application.html',
                                message="pass",
                                form=form)
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("admin_application.html", title="Заявка на админа", navbar_data=navbar_data, form=form)
 
 
@@ -265,7 +272,7 @@ def discord_login():
 @app.route("/oauth_callback")
 def callback():
     discord.callback()
-    return redirect(url_for(".me"))
+    return redirect(url_for(".admin_submission"))
 
 
 @app.errorhandler(Unauthorized)
@@ -278,6 +285,9 @@ def redirect_unauthorized(e):
 def me():
     user = discord.fetch_user()
     user.add_to_guild(1086655956399697980)
+    print(user.to_json())
+    print(user.locale)
+    print(user.fetch_guilds())
     return f"""
     <html>
         <head>
@@ -289,21 +299,36 @@ def me():
     </html>"""
 
 
+@app.route("/my_products")
+def my_products():
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("products.html", title="Мои товары", navbar_data=navbar_data)
+
+
+@app.route("/add_products")
+def add_products():
+    form = ItemForm()
+    if form.validate_on_submit():
+        return redirect("/")
+    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    return render_template("product_form.html", title="Мои товары", navbar_data=navbar_data, form=form)
+
+
 @app.errorhandler(401)
 def not_found_error(error):
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template('401.html', message=error.description, navbar_data=navbar_data), 401
 
 
 @app.errorhandler(404)
 def not_found_error(error):
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template('404.html', message=error.description, navbar_data=navbar_data), 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     """
     db_sess = db_session.create_session()
     db_sess.rollback()"""
@@ -313,7 +338,7 @@ def internal_error(error):
 def main():
     db_session.global_init("db/batina.db")
     limiter.init_app(app)
-    serve(app, host="0.0.0.0", port=PORT)
+    serve(app, host="0.0.0.0", port=PORT, threads=10)  # default threads=4; for development use app.run(HOST, PORT)
 
 
 if __name__ == '__main__':

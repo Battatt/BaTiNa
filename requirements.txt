@@ -4,6 +4,7 @@ Flask-RESTful
 Flask-Limiter
 Flask-Discord
 flask_wtf
+discord-webhook
 SQLAlchemy-serializer
 SQLAlchemy
 Werkzeug
