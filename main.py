@@ -7,9 +7,11 @@ from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthor
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 from api import user_resource
+from api import item_resource
 from api import validate_location
 from data import db_session
 from data.user import User
+from data.item import Item
 from forms.admin_application_form import AdminForm
 from forms.product_addition import ItemForm
 from forms.login_form import LoginForm
@@ -58,6 +60,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 api_app = Api(app)
 api_app.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
+api_app.add_resource(item_resource.ItemResource, '/api/item/<int:id>')
+api_app.add_resource(item_resource.ItemListResource, '/api/items')
 limiter.limit("1/second")(user_resource.UserResource)  # Don't work
 api_app.add_resource(validate_location.LocationResource, '/api/location/<string:address>')
 api_app.add_resource(validate_location.GeoIpResource, '/api/geoip/<string:ip>')
@@ -80,16 +84,26 @@ def get_navbar_data(user_id):
     return None
 
 
+def get_all_items():
+    response = requests.get(f'http://{HOST}:{PORT}/api/items')
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    return None
+
+
 @app.route('/')
 def index():
+    items = get_all_items()["items"] if get_all_items()["items"] else []
     if current_user.is_authenticated:
         response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
         if response.status_code == 200:
             navbar_data = get_navbar_data(current_user.user_id)
-            return render_template("index.html", navbar_data=navbar_data)
+            return render_template("index.html", title='Batina — интернет магазин',
+                                   navbar_data=navbar_data, items=items)
         else:
             abort(404)
-    return render_template("index.html", title='Batina — интернет магазин')
+    return render_template("index.html", title='Batina — интернет магазин', items=items)
 
 
 @app.route('/<title>')
@@ -301,16 +315,41 @@ def me():
 
 @app.route("/my_products")
 def my_products():
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("products.html", title="Мои товары", navbar_data=navbar_data)
 
 
-@app.route("/add_products")
+@login_required
+@app.route("/add_products", methods=['GET', 'POST'])
 def add_products():
     form = ItemForm()
     if form.validate_on_submit():
+        name = form.name.data
+        description = form.description.data
+        category = form.category.data
+        price = form.price.data
+        amount = form.amount.data
+        image = form.image.data.read()
+        if not image:
+            with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
+                image = bytearray(image.read())
+        adder_id = current_user.user_id
+        is_visible = form.is_visible.data
+        item = Item(
+            name=name,
+            seller_id=adder_id,
+            description=description,
+            category=category,
+            image=image,
+            amount=amount,
+            price=price,
+            is_visible=is_visible,
+        )
+        db_sess = db_session.create_session()
+        db_sess.add(item)
+        db_sess.commit()
         return redirect("/")
-    navbar_data = get_navbar_data(current_user.id) if current_user.is_authenticated else None
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template("product_form.html", title="Мои товары", navbar_data=navbar_data, form=form)
 
 

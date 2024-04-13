@@ -4,15 +4,16 @@ body {
     padding: 0;
     padding-top: 90px;
     width: 100%;
-    justify-content: space-between;
+    justify-content: stretch;
     align-items: stretch;
 }
 .main {
+    display: inline-block;
     width: 100%;
     margin: 0;
     padding: 0;
-    justify-content: none;
-    align-items: stretch;
+    justify-content: space-between;
+    align-items: center;
 }
 .button-27 {
   margin-top: 10px

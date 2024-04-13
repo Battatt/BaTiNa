@@ -13,14 +13,15 @@
   <button type="button" id="search-button" class="search-button">Найти</button>
 </div>
 <ul class="products clearfix">
-	{% for i in range(10) %}
+	{% for item in items %}
 	<li class="product-wrapper">
 		<a href="" class="product">
 		<div class="product-photo">
-			<img src="../static/img/profile/avatar_green.jpg" alt="">
+			<img src="data:image/png;base64,{{ item['image'] }}" alt="">
 		</div>
-			<h1>Name</h1>
-			<p>Description, price</p>
+			<h1>{{ item["name"] }}</h1>
+			<p>{{ item["description"] }}</p>
+			<p>Цена: {{ item["price"] }}</p>
 		</a>
 	</li>
 	{% endfor %}

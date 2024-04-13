@@ -59,7 +59,8 @@
                 </div>
             {% endfor %}
         </div>
-      <button type="submit" class="btn">Отправить заявку</button>
+        <div class="remember-forgot">{{ form.is_visible(type="checkbox") }} {{ form.is_visible.label }}</div>
+      <button type="submit" class="btn">Подтвердить</button>
         <div class="register-link">{{ message }}</div>
     </form>
     </div>
