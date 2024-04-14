@@ -10,14 +10,10 @@ class Order(SqlAlchemyBase, SerializerMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
-    seller = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
-    seller_id = orm.relationship('User')
+    customer = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.user_id"))
+    customer_id = orm.relationship('User')
     item = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("items.id"))
     item_id = orm.relationship('Item')
-    start = sqlalchemy.Column(sqlalchemy.DateTime,
-                              default=datetime.datetime.now())
-    end = sqlalchemy.Column(sqlalchemy.DateTime,
-                           default=datetime.datetime.now() + datetime.timedelta(days=2))
-    is_finished = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
 
 

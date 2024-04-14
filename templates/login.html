@@ -1,6 +1,22 @@
-{% extends "base.html" %}
-
-{% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <title>{{title}}</title>
+    <script defer src="../static/styles/script.js"></script>
+</head>
+<body>
+<header class="header open">
+    <div class="container header_container">
+    <div class="navbar">
+    <a class="logo" href="/">BaTiNa</a>
+    </div>
+    </div>
+</header>
+<main class="main">
     <div class="wrapper">
      <h1>Авторизация</h1>
     <form action="" method="post">
@@ -31,4 +47,6 @@
         </div>
     </form>
     </div>
-{% endblock %}
+</main>
+</body>
+</html>

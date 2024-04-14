@@ -15,7 +15,8 @@ class ItemResource(Resource):
             return jsonify({'status': f"Item {id} not found"})
         session = data.db_session.create_session()
         items = session.query(data.item.Item).filter(data.item.Item.id == id).first()  # type:ignore[call-arg]
-        return jsonify({'user': {'seller_id': items.seller_id, 'name': items.name, 'description': items.description,
+        return jsonify({'user': {'id': items.id, 'seller_id': items.seller_id, 'name': items.name,
+                                 'description': items.description,
                                  'price': items.price, 'image': items.image.hex(), 'amount': items.amount,
                                  'category': items.category, 'is_visible': items.is_visible}})
 

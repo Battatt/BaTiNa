@@ -10,10 +10,12 @@ from api import user_resource
 from api import item_resource
 from api import validate_location
 from data import db_session
+from data.order import Order
 from data.user import User
 from data.item import Item
 from forms.admin_application_form import AdminForm
 from forms.product_addition import ItemForm
+from forms.purchase_form import PurchaseForm
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 from forms.partnership_form import PartnershipShip
@@ -23,7 +25,10 @@ import jinja2
 import base64
 import random
 import os
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 def default_error_responder(request_limit: RequestLimit):
     error_template = jinja2.Environment().from_string(
@@ -104,6 +109,78 @@ def index():
         else:
             abort(404)
     return render_template("index.html", title='Batina — интернет магазин', items=items)
+
+
+@app.route("/product/<int:id>")
+def product_page(id):
+    response = requests.get(f'http://{HOST}:{PORT}/api/item/{id}')
+    if response.status_code == 200:
+        data = response.json()
+        item = dict()
+        for key, value in data["user"].items():
+            if key == "image":
+                item[key] = base64.b64encode(bytes.fromhex(value)).decode('ascii')
+            else:
+                item[key] = value
+    else:
+        abort(404)
+    if current_user.is_authenticated:
+        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
+        if response.status_code == 200:
+            navbar_data = get_navbar_data(current_user.user_id)
+        else:
+            abort(404)
+    if item:
+        return render_template("product_page.html", title=item["name"], navbar_data=navbar_data,
+                               item=item)
+    else:
+        abort(404)
+
+
+@login_required
+@app.route("/purchase/<int:id>", methods=['GET', 'POST'])
+def purchase_form(id):
+    response = requests.get(f'http://{HOST}:{PORT}/api/item/{id}')
+    if response.status_code == 200:
+        data = response.json()
+        item = dict()
+        for key, value in data["user"].items():
+            if key == "image":
+                item[key] = base64.b64encode(bytes.fromhex(value)).decode('ascii')
+            else:
+                item[key] = value
+    else:
+        abort(404)
+    if current_user.is_authenticated:
+        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
+        if response.status_code == 200:
+            navbar_data = get_navbar_data(current_user.user_id)
+        else:
+            abort(404)
+    if item:
+        form = PurchaseForm()
+        if form.validate_on_submit():
+            email = form.email.data
+            acceptation = form.acceptation.data
+            if acceptation:
+                """Здесь должна быть проверка на то, что человек оплатил товар"""
+                db_sess = db_session.create_session()
+                items_table = db_sess.query(Item)
+                current_item = items_table.filter(Item.id == item["id"])
+                if current_item:
+                    is_visible = False if item["amount"] - 1 == 0 else True
+                    current_item.update({"amount": item["amount"] - 1, "is_visible": is_visible})
+                else:
+                    abort(404)
+                order = Order(customer=current_user.user_id, item=item["id"], )
+                db_sess.add(order)
+                db_sess.commit()
+                return redirect("/")
+        return render_template("purchase_form.html", form=form, title=item["name"],
+                               navbar_data=navbar_data,
+                               item=item)
+    else:
+        abort(404)
 
 
 @app.route('/<title>')

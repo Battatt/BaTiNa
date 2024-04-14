@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="wrapper">
+     <h1>Покупка товара: "{{ item['name'] }}"</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="input-box">
+            {{ form.email.label }}<br>
+            {{ form.email(class="form-control", placeholder="natan_timbak_battatt@gmail.com") }}<br>
+        </div>
+        <div class="remember-forgot">{{ form.acceptation(type="checkbox") }} {{ form.acceptation.label }}</div>
+        <button type="submit" class="btn">Оплатить товар</button>
+        <div class="register-link">{{ message }}</div>
+    </form>
+    </div>
+{% endblock %}

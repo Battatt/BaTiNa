@@ -14,16 +14,18 @@
 </div>
 <ul class="products clearfix">
 	{% for item in items %}
-	<li class="product-wrapper">
-		<a href="" class="product">
-		<div class="product-photo">
-			<img src="data:image/png;base64,{{ item['image'] }}" alt="">
-		</div>
-			<h1>{{ item["name"] }}</h1>
-			<p>{{ item["description"] }}</p>
-			<p>Цена: {{ item["price"] }}</p>
-		</a>
-	</li>
+	{% if (current_user.role == 0 and item["amount"] == 0) or item["amount"] > 0 %}
+		<li class="product-wrapper">
+			<a href="/product/{{ item['id'] }}" class="product">
+			<div class="product-photo">
+				<img src="data:image/png;base64,{{ item['image'] }}" alt="">
+			</div>
+				<h1>{{ item["name"] }}</h1>
+				<p>{{ item["description"] }}</p>
+				<p>Цена: {{ item["price"] }}</p>
+			</a>
+		</li>
+	{% endif %}
 	{% endfor %}
 </ul>
 {% endblock %}
