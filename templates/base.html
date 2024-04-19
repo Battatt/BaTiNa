@@ -22,15 +22,13 @@
       <li class="close"><span onclick="menu_hide()">×</span></li>
       {% if current_user.is_authenticated %}
         <li><a href="/profile/{{ current_user.user_id }}" class="navbar_link"><img id="avatar_profile" src="data:image/png;base64,{{ navbar_data['profile_photo'] }}"><br>{{ navbar_data["name"] }}</a></li>
-            {% if current_user.role == "2" %}
-                <li><a href="/my_products" class="navbar_link">Мои товары</a></li>
-            {% elif current_user.role == "1" %}
+            {% if current_user.role == "1" %}
                 <li><a href="/favs" class="navbar_link">Избранное</a></li>
                 <li><a href="/orders" class="navbar_link">Мои заказы</a></li>
                 <li><a href="/partnership" class="navbar_link">Партнерство</a></li>
                 <li><a href="/discord_login" class="admin_link">Заявка на администратора</a></li>
             {% else %}
-            <li><a href="/admin" class="navbar_link">Ссылка для админов</a></li>
+            <li><a href="/add_products" class="navbar_link">Добавить товар</a></li>
             {% endif %}
         <li><a href="/logout" class="navbar_link">Выйти</a></li>
         {% else %}

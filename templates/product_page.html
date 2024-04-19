@@ -21,7 +21,11 @@
                 <div class="product-price">
                     <span>{{ item["price"] }} ₽</span>
                     {% if current_user.is_authenticated %}
-                        <a class="cart-btn" href="/purchase/{{ item['id'] }}">Купить</a>
+                        {% if current_user.role == "1" %}
+                            <a class="cart-btn" href="/purchase/{{ item['id'] }}">Купить</a>
+                        {% elif current_user.role == "0" %}
+                            КНОПКИ АДМИНОВ
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
