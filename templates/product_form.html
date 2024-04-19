@@ -42,6 +42,15 @@
             {% endfor %}
         </div>
         <div class="input-box">
+            {{ form.content.label }}<br>
+            {{ form.content(class="form-control") }}<br>
+            {% for error in form.content.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="input-box">
             {{ form.price.label }}<br>
             {{ form.price(class="form-control") }}<br>
             {% for error in form.price.errors %}

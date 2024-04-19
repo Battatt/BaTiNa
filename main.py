@@ -172,7 +172,7 @@ def purchase_form(id):
                     current_item.update({"amount": item["amount"] - 1, "is_visible": is_visible})
                 else:
                     abort(404)
-                order = Order(customer=current_user.user_id, item=item["id"], )
+                order = Order(customer=current_user.user_id, content=item["content"], )
                 db_sess.add(order)
                 db_sess.commit()
                 return redirect("/")
@@ -407,6 +407,7 @@ def add_products():
         price = form.price.data
         amount = form.amount.data
         image = form.image.data.read()
+        content = form.content.data
         if not image:
             with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
                 image = bytearray(image.read())
@@ -414,6 +415,7 @@ def add_products():
         is_visible = form.is_visible.data
         item = Item(
             name=name,
+            content=content,
             seller_id=adder_id,
             description=description,
             category=category,
