@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Card</title>
+    <link rel="stylesheet" href="../static/styles/ds_profile.css">
+</head>
+<body>
+
+    <div class="cont">
+        <div class="cards" data-tilt>
+            <img src="{{ avatar_url }}">
+            <h2>{{ data["global_name"] }}</h2>
+            <p>@{{ data["username"] }}</p>
+            <div class="links">
+              <a href="https://discord.com/profile/{{ data['id'] }}"><img src="https://img.icons8.com/color/344/discord--v1.png"></a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+{% endblock %}

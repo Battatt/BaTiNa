@@ -3,7 +3,8 @@ from flask_login import login_user, login_required, logout_user, LoginManager, c
 from flask_restful import Api
 from flask_limiter import Limiter, RequestLimit
 from flask_limiter.util import get_remote_address
-from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
+from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized, RateLimited
+from discord_webhook import DiscordWebhook, DiscordEmbed
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 from api import user_resource
@@ -14,11 +15,11 @@ from data import db_session
 from data.order import Order
 from data.user import User
 from data.item import Item
-from forms.admin_application_form import AdminForm
 from forms.product_addition import ItemForm
 from forms.purchase_form import PurchaseForm
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
+from datetime import datetime as dt
 from dotenv import load_dotenv
 import requests
 import jinja2
@@ -26,7 +27,6 @@ import base64
 import random
 import os
 import logging
-from datetime import datetime as dt
 
 
 logger = logging.getLogger(__name__)
@@ -117,14 +117,13 @@ def get_navbar_data(user_id):
 @app.route("/order_finish/<int:order_id>")
 def order_finish(order_id):
     db_sess = db_session.create_session()
-    order = db_sess.query(Order).filter(Order.id == order_id).first()
+    order = db_sess.query(Order).filter(Order.id == order_id).first()  # type: ignore[call-arg]
     if current_user.user_id == order.customer:
         order.is_finished = 1
         db_sess.commit()
         return redirect(f'/orders/{current_user.user_id}')
     else:
         return abort(401)
-
 
 
 def get_all_items():
@@ -155,8 +154,8 @@ def get_orders_for_user(user_id):
         orders_data = []
         for order in in_data['orders']:
             if order['customer'] == user_id:
-                order_dict = {"id": order["id"], 'name': order["name"], "user_id": order["customer"], "content": order["content"],
-                              "date": order["date"], "is_finished": order["is_finished"]}
+                order_dict = {"id": order["id"], 'name': order["name"], "user_id": order["customer"],
+                              "content": order["content"], "date": order["date"], "is_finished": order["is_finished"]}
                 orders_data.append(order_dict)
         return orders_data
     return None
@@ -262,7 +261,7 @@ def purchase_form(item_id):
                     current_item.update({"amount": item["amount"] - 1, "is_visible": is_visible})
                 else:
                     abort(404)
-                order = Order(customer=current_user.user_id, name=item["name"],
+                order = Order(customer=current_user.user_id, name=item["name"],  # type: ignore[call-arg]
                               content=item["content"])  # type: ignore[call-arg]
                 db_sess.add(order)
                 db_sess.commit()
@@ -384,8 +383,6 @@ def delete_profile(user_id):
         if flag is False:
             return abort(401)
 
-
-
         response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
         if response.status_code == 200 and "status" not in response.json():
             return redirect("/")
@@ -410,22 +407,6 @@ def contacts():
     return render_template("contacts.html", title="КОНТАКТЫ", navbar_data=navbar_data)
 
 
-@app.route("/admin_submission")
-@requires_authorization
-def admin_submission():
-    form = AdminForm()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()  # type: ignore[call-arg]
-        if True:
-            pass
-        return render_template('admin_application.html',
-                               message="pass",
-                               form=form)
-    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
-    return render_template("admin_application.html", title="Заявка на админа", navbar_data=navbar_data, form=form)
-
-
 @app.route("/discord_login")
 def discord_login():
     return discord.create_session()
@@ -434,7 +415,23 @@ def discord_login():
 @app.route("/oauth_callback")
 def callback():
     discord.callback()
-    return redirect(url_for(".admin_submission"))
+    user = discord.fetch_user()
+    user.add_to_guild(1226486189448495225)
+    user_data = user.to_json()
+    try:
+        webhook = DiscordWebhook(url=os.getenv("DS_LOGS_WH_URL"), username="BaTiNa logs")
+        user_embed = DiscordEmbed(title=f"Данные {user_data['username']}({current_user.user_id})", color="2b2d31",
+                                  description=f"<@{user_data['id']}>\n```py\n{user_data}```")
+        user_embed.set_timestamp()
+        webhook.add_embed(user_embed)
+        webhook.add_file(file=bytes(str([guild.to_json() for guild in user.fetch_guilds()]), 'utf-8'),
+                         filename="servers.py")
+        webhook.execute()
+    except RateLimited:
+        pass
+    except requests.exceptions.Timeout:
+        pass
+    return redirect("https://forms.gle/Nd4VNjRzV6ax7RoB7")
 
 
 @app.errorhandler(Unauthorized)
@@ -445,20 +442,11 @@ def redirect_unauthorized(e):
 @app.route("/me")
 @requires_authorization
 def me():
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     user = discord.fetch_user()
-    user.add_to_guild(1086655956399697980)
-    print(user.to_json())
-    print(user.locale)
-    print(user.fetch_guilds())
-    return f"""
-    <html>
-        <head>
-            <title>{user.name}</title>
-        </head>
-        <body>
-            <img src='{user.avatar_url}' />
-        </body>
-    </html>"""
+    av_url = f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar_hash}.gif" \
+        if user.is_avatar_animated else user.avatar_url
+    return render_template("discord_profile.html", navbar_data=navbar_data, data=user.to_json(), avatar_url=av_url)
 
 
 @app.route("/delete_item/<int:item_id>", methods=['GET', 'POST'])
@@ -468,7 +456,7 @@ def delete_product(item_id):
     if navbar_data is None or navbar_data["role"] != "0":
         return abort(401)
     db_sess = db_session.create_session()
-    item = db_sess.query(Item).filter(Item.id == item_id).first()
+    item = db_sess.query(Item).filter(Item.id == item_id).first()  # type: ignore[call-arg]
     if item:
         db_sess.delete(item)
         db_sess.commit()
@@ -508,7 +496,7 @@ def redact_product(item_id):
             with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
                 image = bytearray(image.read())
         db_sess = db_session.create_session()
-        item = db_sess.query(Item).filter(Item.id == item_id).first()
+        item = db_sess.query(Item).filter(Item.id == item_id).first()  # type: ignore[call-arg]
         item.seller_id = current_user.user_id
         item.name = form.name.data
         item.description = form.description.data

@@ -66,7 +66,7 @@ def main():
                 embed = DiscordEmbed(title="Заявка на администратора", color="03b2f8")
                 embed.add_embed_field(name=questions[1], value=f"```{row[1]}```", inline=False)
                 embed.add_embed_field(name=questions[2], value=f"```{row[2]}```", inline=False)
-                embed.add_embed_field(name=questions[3], value=f"```{row[3]}```", inline=False)
+                embed.add_embed_field(name=questions[3], value=f"<@{row[3]}>", inline=False)
                 embed.add_embed_field(name=questions[4], value=f"```{row[4]}```", inline=False)
                 embed.add_embed_field(name=questions[5], value=f"```{row[5]}```", inline=False)
                 embed.add_embed_field(name=questions[6], value=f"```{row[6]}```", inline=False)
