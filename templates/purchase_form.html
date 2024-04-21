@@ -26,7 +26,7 @@
             {{ form.card_owner(class="form-control", placeholder="BABASHA BATINA") }}<br>
         </div>
         <div class="remember-forgot">{{ form.acceptation(type="checkbox") }} {{ form.acceptation.label }}<a id="agree" href="/agree">Соглашение</a></div>
-        <button type="submit" class="btn">Оплатить товар</button>
+        <button type="submit" class="btn">Оплатить{{ item["price"] }}</button>
         <div class="register-link">{{ message }}</div>
     </form>
     </div>

@@ -15,6 +15,7 @@ from data import db_session
 from data.order import Order
 from data.user import User
 from data.item import Item
+from forms.admin_form import AdminForm
 from forms.product_addition import ItemForm
 from forms.purchase_form import PurchaseForm
 from forms.login_form import LoginForm
@@ -558,6 +559,28 @@ def not_found_error(error):
 def not_found_error(error):
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     return render_template('404.html', message=error.description, navbar_data=navbar_data), 404
+
+
+@app.route("/add_admin", methods=['GET', 'POST'])
+@login_required
+def add_admin():
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
+    if navbar_data["role"] != '0':
+        return abort(401)
+    form = AdminForm()
+    if form.validate_on_submit():
+        user_id = int(form.user_id.data)
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.user_id == user_id).first()
+        if user:
+            user.role = 0
+            db_sess.commit()
+            return redirect("/")
+        else:
+            return render_template("admin_form.html", title="Добавление админа",
+                                   navbar_data=navbar_data, form=form, message="Пользователь не найден")
+    return render_template("admin_form.html", title="Добавление админа",
+                           navbar_data=navbar_data, form=form)
 
 
 @app.errorhandler(500)

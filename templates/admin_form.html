@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="wrapper">
+     <h1>Добавление администратора</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="input-box">
+            {{ form.user_id.label }}<br>
+            {{ form.user_id(class="form-control", placeholder="332768151622") }}<br>
+        </div>
+        <button type="submit" class="btn">Добавить администратора</button>
+        <div class="register-link">{{ message }}</div>
+    </form>
+    </div>
+{% endblock %}
