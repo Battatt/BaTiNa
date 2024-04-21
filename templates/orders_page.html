@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div align="left" class="table">
+        <h1 align="center">Список Заказов</h1>
+            {% for order in orders_data %}
+            <h2><b>Название товара:</b> {{ order['name'] }}</h2>
+            <table class="orders_table">
+                <tr>
+                    <td class="table-header">Содержимое</td>
+                    <td class="table-header">Дата</td>
+                    <td class="table-header">Завершенность</td>
+                </tr>
+                <tr>
+                    <td class="table-elem">{{ order['content'] }}</td>
+                    <td class="table-elem">{{ order['date'] }}</td>
+                    <td class="table-elem">
+                        {% if order["is_finished"] == 0 %}
+                            <a class="order-button" href="/order_finish/{{ order['id'] }}">Завершить</a>
+                        {% else %}
+                            Заказ завершен
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+            {% endfor %}
+    </div>
+{% endblock %}

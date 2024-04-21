@@ -14,6 +14,7 @@ align-items: center;
 }
 
 .product-container {
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -42,7 +43,9 @@ align-items: center;
     flex: 1;
     padding: 20px;
 }
-
+.product-description {
+    height: 100%;
+}
 .product-description h1 {
     margin-top: 0;
     color: #333;
