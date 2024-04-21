@@ -87,6 +87,17 @@ def check_ip():
     return
 
 
+def search_items(query, data):
+    exit_items = []
+    if query == '':
+        return data
+    for item in data:
+        temp_query = item["name"].lower() + item["description"].lower() + item["category"].lower()
+        if str(''.join(query.split())).lower() in temp_query:
+            exit_items.append(item)
+    return exit_items
+
+
 @limiter.limit("5/second")
 def get_navbar_data(user_id):
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
@@ -124,11 +135,14 @@ def get_all_items():
     return None
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     check_ip()
     items = get_all_items()["items"] if get_all_items()["items"] else []
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
+    if request.method == 'POST':
+        search_query = request.form.get('search_query')
+        items = search_items(search_query, items)
     return render_template("index.html", title='Batina — интернет магазин',
                            navbar_data=navbar_data, items=items)
 

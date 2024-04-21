@@ -9,8 +9,10 @@
     <title>{{title}}</title>
 </head>
 <div class="search-container">
-  <input type="text" id="search-input" placeholder="Поиск..." class="search-box">
-  <button type="button" id="search-button" class="search-button">Найти</button>
+    <form class="search" method="post">
+        <input type="text" name="search_query" id="search-input" placeholder="Поиск..." class="search-box">
+        <button type="submit" id="search-button" class="search-button">Найти</button>
+    </form>
 </div>
 <ul class="products clearfix">
 	{% for item in items %}

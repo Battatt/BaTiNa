@@ -23,9 +23,9 @@
         </div>
         <div class="input-box">
             {{ form.card_owner.label }}<br>
-            {{ form.card_owner(class="form-control", placeholder="Ботов Олег Эренцfнович") }}<br>
+            {{ form.card_owner(class="form-control", placeholder="BABASHA BATINA") }}<br>
         </div>
-        <div class="remember-forgot">{{ form.acceptation(type="checkbox") }} {{ form.acceptation.label }}</div>
+        <div class="remember-forgot">{{ form.acceptation(type="checkbox") }} {{ form.acceptation.label }}<a id="agree" href="/agree">Соглашение</a></div>
         <button type="submit" class="btn">Оплатить товар</button>
         <div class="register-link">{{ message }}</div>
     </form>

@@ -60,12 +60,19 @@ align-items: center;
 
 .cart-btn {
     padding: 10px 20px;
-    background-color: #1783fe;
     color: white;
     text-decoration: none;
     border-radius: 5px;
 }
-
+.cart-btn.g {
+    background-color: #54DF0E;
+}
+.cart-btn.y {
+    background-color: #DFDC0E;
+}
+.cart-btn.r {
+    background-color: #DF0E0E;
+}
 .cart-btn:hover {
-    background-color: #0f65bf;
+    background-color: #949494;
 }

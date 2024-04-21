@@ -111,13 +111,15 @@ body {
   margin-bottom: 50px;
 }
 .search-box {
-  width: 75%;
+  width: 85%;
   height: 50px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px 0 0 5px;
 }
+
 .search-button {
+  height: 50px;
   padding: 10px;
   background-color: #4CAF50;
   color: white;
@@ -132,4 +134,11 @@ body {
   border-color: #4CAF50;
 }.search-button:hover {
   background-color: #45a049;
+}
+.search {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    align-items: center;
 }

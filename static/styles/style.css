@@ -360,3 +360,7 @@ td {
     display: inline-block;
     font-size: 16px;
 }
+#agree {
+    text-decoration: none;
+    color: #0C238A;
+}

@@ -22,7 +22,7 @@
     {% if current_user.user_id == user_id %}
         <!-- Add buttons based on user's role -->
         {% if user_data["role"] == "1" %}
-            <a class="btn-new" href="/orders">Мои заказы</a>
+            <a class="btn-new" href="/orders/{{ current_user.user_id }}">Мои заказы</a>
         {% else %}
                 <a class="btn-new" href="/add_products">Добавить товар</a>
         {% endif %}
