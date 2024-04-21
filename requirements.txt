@@ -13,4 +13,7 @@ waitress
 requests
 jinja2
 python-dotenv
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
 urllib3==1.26.6
