@@ -29,7 +29,6 @@ import random
 import os
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -331,9 +330,11 @@ def register():
         if not banner:
             with open("static/img/profile/banner.jpg", "rb") as image:
                 banner = bytearray(image.read())
-        while user_table.filter(User.user_id == (user_id := int.from_bytes(random.randbytes(4), "little"))).first():
-            # type: ignore[call-arg]
-            pass
+
+        while True:
+            user_id = int.from_bytes(random.randbytes(4), "little")
+            if not user_table.filter(User.user_id == user_id).first():
+                break
         ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
         user = User(
             name=form.name.data,  # type: ignore[call-arg]
@@ -595,7 +596,9 @@ def internal_error(error):
 def main():
     db_session.global_init("db/batina.db")
     limiter.init_app(app)
-    serve(app, host="0.0.0.0", port=PORT, threads=10)  # default threads=4; for development use app.run(HOST, PORT)
+    app.run(HOST, PORT)
+    # serve(app, host="0.0.0.0", port=PORT, threads=10)
+    # default threads=4; for development use app.run(HOST, PORT)
 
 
 if __name__ == '__main__':
