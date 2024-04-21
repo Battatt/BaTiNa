@@ -14,7 +14,7 @@
 </div>
 <ul class="products clearfix">
 	{% for item in items %}
-	{% if (current_user.role == 0 and item["amount"] == 0) or item["amount"] > 0 %}
+	{% if current_user.role == "0" or item["is_visible"] == 1 %}
 		<li class="product-wrapper">
 			<a href="/product/{{ item['id'] }}" class="product">
 			<div class="product-photo">

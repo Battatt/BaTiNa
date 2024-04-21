@@ -15,7 +15,6 @@
     <h1 class="username">{{ user_data['name'] }}</h1>
     <div class="about_container">
     <p class="about_info">Дата рождения: {{ user_data['birthday'] }}</p>
-    <p class="about_info">Адрес: {{ user_data['address'] }}</p>
     <p class="about_info">Email: {{ user_data['email'] }}</p>
     </div>
     <div class="btn_container">
@@ -29,10 +28,6 @@
         {% endif %}
         <a class="btn-new danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
     {% else %}
-        <!-- Add buttons based on user's role -->
-        {% if user_data["role"] == "2" %}
-            ЗАДАНИЕ: Товары продавца
-        {% endif %}
     {% endif %}
     </div>
   </div>

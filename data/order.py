@@ -12,6 +12,7 @@ class Order(SqlAlchemyBase, SerializerMixin):
                            primary_key=True, autoincrement=True)
     customer = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.user_id"))
     customer_id = orm.relationship('User')
+    name = sqlalchemy.Column(sqlalchemy.String, default="NAME")
     content = sqlalchemy.Column(sqlalchemy.String, default="CONTENT")
     date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean, default=False)

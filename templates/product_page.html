@@ -17,14 +17,23 @@
         <div class="right-column">
             <div class="product-description">
                 <h1>{{ item["name"] }}</h1>
-                <p>{{ item["description"] }}</p>
+                <p>Описание товара: {{ item["description"] }}</p>
+                {% if current_user.is_authenticated %}
+                        {% if current_user.role == "0" %}
+                            <p>Дополнительная информация:<br>
+                                <b>ID-публикатора: {{ item["seller_id"] }}</b><br>
+                                Категория товара: {{ item["category"] }}<br>
+                                Количество товара на складе: {{ item["amount"] }}</p><br>
+                        {% endif %}
+                {% endif %}
                 <div class="product-price">
                     <span>{{ item["price"] }} ₽</span>
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == "1" %}
                             <a class="cart-btn" href="/purchase/{{ item['id'] }}">Купить</a>
                         {% elif current_user.role == "0" %}
-                            КНОПКИ АДМИНОВ
+                            <a class="cart-btn" href="/redact_item/{{ item['id'] }}">Редактировать</a>
+                            <a class="cart-btn" href="/delete_item/{{ item['id'] }}">Удалить</a>
                         {% endif %}
                     {% endif %}
                 </div>

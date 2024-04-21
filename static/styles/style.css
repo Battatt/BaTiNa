@@ -318,3 +318,42 @@ body > footer {
     border-radius: 5px;
     cursor: pointer;
 }
+.table {
+    width: 80%;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.orders_table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  border: 3px solid #696969;
+  border-radius: 10px;
+}
+th,
+td {
+  padding: 20px;
+}
+
+.table-header {
+    margin-top: 10px;
+    background-color: grey;
+}
+
+.table-elem {
+    background-color: #DCDCDC;
+}
+.order-button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}

@@ -8,6 +8,7 @@ from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 from api import user_resource
 from api import item_resource
+from api import orders_resource
 from api import validate_location
 from data import db_session
 from data.order import Order
@@ -64,6 +65,8 @@ discord = DiscordOAuth2Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api_app = Api(app)
+api_app.add_resource(orders_resource.OrdersList, '/api/orders_list')
+api_app.add_resource(orders_resource.OrdersResource, '/api/orders/<int:id>')
 api_app.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
 api_app.add_resource(item_resource.ItemResource, '/api/item/<int:id>')
 api_app.add_resource(item_resource.ItemListResource, '/api/items')
@@ -98,6 +101,20 @@ def get_navbar_data(user_id):
     return None
 
 
+@login_required
+@app.route("/order_finish/<int:order_id>")
+def order_finish(order_id):
+    db_sess = db_session.create_session()
+    order = db_sess.query(Order).filter(Order.id == order_id).first()
+    if current_user.user_id == order.customer:
+        order.is_finished = 1
+        db_sess.commit()
+        return redirect(f'/orders/{current_user.user_id}')
+    else:
+        return abort(401)
+
+
+
 def get_all_items():
     response = requests.get(f'http://{HOST}:{PORT}/api/items')
     if response.status_code == 200:
@@ -111,10 +128,35 @@ def index():
     check_ip()
     items = get_all_items()["items"] if get_all_items()["items"] else []
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
-    return render_template("index.html", title='Batina — интернет магазин', navbar_data=navbar_data, items=items)
+    return render_template("index.html", title='Batina — интернет магазин',
+                           navbar_data=navbar_data, items=items)
 
 
-@app.route("/product/<int:id>")
+@limiter.limit("5/second")
+def get_orders_for_user(user_id):
+    response = requests.get(f'http://{HOST}:{PORT}/api/orders_list')
+    if response.status_code == 200:
+        in_data = response.json()
+        orders_data = []
+        for order in in_data['orders']:
+            if order['customer'] == user_id:
+                order_dict = {"id": order["id"], 'name': order["name"], "user_id": order["customer"], "content": order["content"],
+                              "date": order["date"], "is_finished": order["is_finished"]}
+                orders_data.append(order_dict)
+        return orders_data
+    return None
+
+
+@app.route("/orders/<int:user_id>")
+@login_required
+def orders_page(user_id):
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
+    orders_data = get_orders_for_user(user_id)
+    return render_template("orders_page.html", title="Мои заказы", orders_data=orders_data,
+                           navbar_data=navbar_data)
+
+
+@app.route("/product/<int:item_id>")
 def product_page(item_id):
     check_ip()
     response = requests.get(f'http://{HOST}:{PORT}/api/item/{item_id}')
@@ -137,7 +179,7 @@ def product_page(item_id):
 
 
 @login_required
-@app.route("/purchase/<int:id>", methods=['GET', 'POST'])
+@app.route("/purchase/<int:item_id>", methods=['GET', 'POST'])
 def purchase_form(item_id):
     check_ip()
     response = requests.get(f'http://{HOST}:{PORT}/api/item/{item_id}')
@@ -166,7 +208,8 @@ def purchase_form(item_id):
                     current_item.update({"amount": item["amount"] - 1, "is_visible": is_visible})
                 else:
                     abort(404)
-                order = Order(customer=current_user.user_id, content=item["content"])  # type: ignore[call-arg]
+                order = Order(customer=current_user.user_id, name=item["name"],
+                              content=item["content"])  # type: ignore[call-arg]
                 db_sess.add(order)
                 db_sess.commit()
                 return redirect("/")
@@ -353,10 +396,67 @@ def me():
     </html>"""
 
 
-@app.route("/my_products")
-def my_products():
+@app.route("/delete_item/<int:item_id>", methods=['GET', 'POST'])
+@login_required
+def delete_product(item_id):
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
-    return render_template("products.html", title="Мои товары", navbar_data=navbar_data)
+    if navbar_data is None or navbar_data["role"] != "0":
+        return abort(401)
+    db_sess = db_session.create_session()
+    item = db_sess.query(Item).filter(Item.id == item_id).first()
+    if item:
+        db_sess.delete(item)
+        db_sess.commit()
+    else:
+        return abort(404)
+    return redirect("/")
+
+
+@login_required
+@app.route("/redact_item/<int:item_id>", methods=['GET', 'POST'])
+def redact_product(item_id):
+    check_ip()
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
+    form = ItemForm()
+    if request.method == "GET":
+        response = requests.get(f'http://{HOST}:{PORT}/api/item/{item_id}')
+        if response.status_code == 200:
+            data = response.json()
+            item = dict()
+            for key, value in data["user"].items():
+                if key == "image":
+                    item[key] = base64.b64encode(bytes.fromhex(value)).decode('ascii')
+                else:
+                    item[key] = value
+        else:
+            return abort(404)
+        form.name.data = item["name"]
+        form.price.data = item["price"]
+        form.amount.data = item["amount"]
+        form.category.data = item["category"]
+        form.is_visible.data = item["is_visible"]
+        form.content.data = item["content"]
+        form.description.data = item["description"]
+    if form.validate_on_submit():
+        image = form.image.data.read()
+        if not image:
+            with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
+                image = bytearray(image.read())
+        db_sess = db_session.create_session()
+        item = db_sess.query(Item).filter(Item.id == item_id).first()
+        item.seller_id = current_user.user_id
+        item.name = form.name.data
+        item.description = form.description.data
+        item.category = form.category.data
+        item.image = image
+        item.price = form.price.data
+        item.content = form.content.data
+        item.amount = form.amount.data
+        item.is_visible = form.is_visible.data
+        db_sess.commit()
+        return redirect("/")
+    return render_template("product_form.html", title="Редактировать товар",
+                           navbar_data=navbar_data, form=form)
 
 
 @login_required
