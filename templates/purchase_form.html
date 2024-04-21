@@ -9,6 +9,22 @@
             {{ form.email.label }}<br>
             {{ form.email(class="form-control", placeholder="natan_timbak_battatt@gmail.com") }}<br>
         </div>
+        <div class="input-box">
+            {{ form.card_number.label }}<br>
+            {{ form.card_number(class="form-control", placeholder="5252 1488 1337 1945") }}<br>
+        </div>
+        <div class="input-box">
+            {{ form.term.label }}<br>
+            {{ form.term(class="form-control", placeholder="03/31") }}<br>
+        </div>
+        <div class="input-box">
+            {{ form.cvc.label }}<br>
+            {{ form.cvc(class="form-control", placeholder="228") }}<br>
+        </div>
+        <div class="input-box">
+            {{ form.card_owner.label }}<br>
+            {{ form.card_owner(class="form-control", placeholder="Ботов Олег Эренцfнович") }}<br>
+        </div>
         <div class="remember-forgot">{{ form.acceptation(type="checkbox") }} {{ form.acceptation.label }}</div>
         <button type="submit" class="btn">Оплатить товар</button>
         <div class="register-link">{{ message }}</div>

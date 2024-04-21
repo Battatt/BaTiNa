@@ -26,6 +26,7 @@ import base64
 import random
 import os
 import logging
+from datetime import datetime as dt
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +80,7 @@ admin_key = "123456"
 def check_ip():
     ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
     if "," in ip:
-        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip.split(",")[0]}')
+        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip.splаit(",")[0]}')
         if ip_response.status_code == 200:
             if ip_response.json().get("country", None) not in ["RU", None]:
                 return abort(404)
@@ -152,6 +153,8 @@ def get_orders_for_user(user_id):
 def orders_page(user_id):
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     orders_data = get_orders_for_user(user_id)
+    if orders_data is None:
+        orders_data = []
     return render_template("orders_page.html", title="Мои заказы", orders_data=orders_data,
                            navbar_data=navbar_data)
 
@@ -197,7 +200,44 @@ def purchase_form(item_id):
         form = PurchaseForm()
         if form.validate_on_submit():
             email = form.email.data
+            card_number = form.card_number.data
+            term = form.term.data
+            cvc = form.cvc.data
+            card_owner = form.card_owner.data
             acceptation = form.acceptation.data
+            if len(''.join(str(card_number).split(' '))) == 16 and len(cvc) == 3 and str(cvc).isdigit() and card_owner:
+                pass
+            else:
+                print(cvc)
+                return render_template("purchase_form.html", form=form, title=item["name"],
+                                       navbar_data=get_navbar_data(current_user.user_id),
+                                       item=item, message='Ошибка в заполнении данных карты')
+            if term[2] == '/':
+                term = str(term).split('/')
+                if term[0].isdigit():
+                    month = term[0]
+                else:
+                    return render_template("purchase_form.html", form=form, title=item["name"],
+                                           navbar_data=get_navbar_data(current_user.user_id),
+                                           item=item, message='Неправильно указан месяц')
+                if term[1].isdigit():
+                    year = term[1]
+                else:
+                    return render_template("purchase_form.html", form=form, title=item["name"],
+                                           navbar_data=get_navbar_data(current_user.user_id),
+                                           item=item, message='Неправильно указан год')
+                current_month = int(dt.now().month)
+                current_year = int(str(dt.now().year)[2:])
+                if (12 >= int(month) >= current_month and year == current_year) or (int(year) >= current_year):
+                    pass
+                else:
+                    return render_template("purchase_form.html", form=form, title=item["name"],
+                                           navbar_data=get_navbar_data(current_user.user_id),
+                                           item=item, message='Срок карты истёк')
+            else:
+                return render_template("purchase_form.html", form=form, title=item["name"],
+                                       navbar_data=get_navbar_data(current_user.user_id),
+                                       item=item, message='Неправильно указан срок действия')
             if acceptation:
                 """Здесь должна быть проверка на то, что человек оплатил товар"""
                 db_sess = db_session.create_session()
@@ -319,8 +359,19 @@ def profile(user_id):
 @app.route("/user_delete/<int:user_id>")
 def delete_profile(user_id):
     if current_user.user_id == user_id:
-        if True:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
-            pass
+        orders_data = get_orders_for_user(user_id)
+        if orders_data is None:
+            orders_data = []
+        flag = True
+        for order in orders_data:
+            if order["is_finished"] == 0:
+                flag = False
+                break
+        if flag is False:
+            return abort(401)
+
+
+
         response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
         if response.status_code == 200 and "status" not in response.json():
             return redirect("/")
