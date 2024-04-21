@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <link rel="icon" href="../static/img/icon.png" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../static/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/product_page.css">
+    <title>{{title}}</title>
+</head>
+<body>
+<div class="product-container">
+    <div class="product">
+        <div class="left-column">
+            <img src="data:image/png;base64,{{ item['image'] }}" alt="">
+        </div>
+        <div class="right-column">
+            <div class="product-description">
+                <h1>{{ item["name"] }}</h1>
+                <p>{{ item["description"] }}</p>
+                <div class="product-price">
+                    <span>{{ item["price"] }} ₽</span>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == "1" %}
+                            <a class="cart-btn" href="/purchase/{{ item['id'] }}">Купить</a>
+                        {% elif current_user.role == "0" %}
+                            КНОПКИ АДМИНОВ
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock %}

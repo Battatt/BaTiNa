@@ -1,74 +1,75 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="wrapper">
-    <h1>Регистрация</h1>
+<div class="wrapper">
+    <h1>Добавление товара</h1>
     <form action="" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <div class="input-box">
-            {{ form.email.label }}<br>
-            {{ form.email(class="form-control", type="email") }}<br>
-            {% for error in form.email.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </div>
-        <div class="input-box">
             {{ form.name.label }}<br>
-            {{ form.name(class="form-control", type="name") }}<br>
+            {{ form.name(class="form-control") }}<br>
             {% for error in form.name.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
         </div>
-        <div class="input-box">
-            {{ form.birthday.label }}<br>
-            {{ form.birthday(class="form-control", type="birthday", placeholder="01.01.1998") }}<br>
-            {% for error in form.birthday.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </div>
         <div class="input-file">
-            {{ form.banner.label }}<br>
-            {{ form.banner(type="file") }}<br>
-            {% for error in form.banner.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </div>
-        <div class="input-file">
-            {{ form.avatar.label }}<br>
-            {{ form.avatar(type="file") }}<br>
-            {% for error in form.avatar.errors %}
+            {{ form.image.label }}<br>
+            {{ form.image(type="file") }}<br>
+            {% for error in form.image.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
         </div>
         <div class="input-box">
-            {{ form.password.label }}<br>
-            {{ form.password(class="form-control", type="password") }}<br>
-            {% for error in form.password.errors %}
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control", id="input-description") }}<br>
+            {% for error in form.description.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
         </div>
         <div class="input-box">
-            {{ form.password_again.label }}<br>
-            {{ form.password_again(class="form-control", type="password") }}<br>
-            {% for error in form.password_again.errors %}
+            {{ form.category.label }}<br>
+            {{ form.category(class="form-control") }}<br>
+            {% for error in form.category.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
         </div>
-        <button type="submit" class="btn">Зарегистрироваться</button>
+        <div class="input-box">
+            {{ form.content.label }}<br>
+            {{ form.content(class="form-control") }}<br>
+            {% for error in form.content.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="input-box">
+            {{ form.price.label }}<br>
+            {{ form.price(class="form-control") }}<br>
+            {% for error in form.price.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+      <div class="input-box">
+            {{ form.amount.label }}<br>
+            {{ form.amount(class="form-control") }}<br>
+            {% for error in form.amount.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="remember-forgot">{{ form.is_visible(type="checkbox") }} {{ form.is_visible.label }}</div>
+      <button type="submit" class="btn">Подтвердить</button>
         <div class="register-link">{{ message }}</div>
     </form>
     </div>

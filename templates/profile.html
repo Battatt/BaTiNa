@@ -20,17 +20,12 @@
     </div>
     <div class="btn_container">
     <!-- Add conditional buttons based on user's role and permissions -->
-    {% if current_user.id == user_id %}
+    {% if current_user.user_id == user_id %}
         <!-- Add buttons based on user's role -->
-        {% if user_data["role"] == "2" %}
-            <a class="btn-new" href="/my_products">Мои товары</a>
+        {% if user_data["role"] == "1" %}
+            <a class="btn-new" href="/orders">Мои заказы</a>
         {% else %}
-            {% if user_data["role"] == "1" %}
-                <a class="btn-new" href="/orders">Мои заказы</a>
-                <a class="btn-new" href="/partnership">Сотрудничество</a>
-            {% else %}
-                УПРАВЛЕНИЕ АДМИНИСТРАЦИЕЙ
-            {% endif %}
+                <a class="btn-new" href="/add_products">Добавить товар</a>
         {% endif %}
         <a class="btn-new danger" href="/user_delete/{{ user_id }}">Удалить профиль</a>
     {% else %}

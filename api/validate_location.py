@@ -1,5 +1,3 @@
-import pprint
-
 import requests
 import os
 import json
@@ -23,7 +21,6 @@ class LocationResource(Resource):
         resp = requests.get(url, headers=headers)
         if resp.status_code == 200:
             loc_json, locations = resp.json(), []
-            pprint.pprint(loc_json["results"])
             for found_loc in loc_json['results']:
                 locations.append(
                     {'status': found_loc["rank"]["confidence"],

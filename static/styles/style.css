@@ -10,12 +10,10 @@
 body {
     min-width: 600px;
     width: expression( document.body.clientWidth < 600 ? "600px" : "auto" );
-    display: flex;
+    display: grid;
     min-height: 100vh;
     background: white no-repeat;
     background-size: cover;
-    justify-content: center;
-    align-items: center;
     background-position: center;
     overflow-x: hidden;
 }
@@ -172,6 +170,8 @@ body {
     width: 100%;
 }
 .main {
+    display: flex;
+    width: 100%;
     margin-top: 100px;
     justify-content: center;
     align-items: center;
@@ -286,4 +286,38 @@ body {
 .container.image {
     display: block;
     align-items: center;
+}
+#input-description {
+    width: 100%;
+    height: 100%;
+    line-height: 1.5;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 1px 1px 1px #999;
+}
+footer {
+  margin-top: 50px;
+  background-color: #000;
+  color: #fff;
+  padding: 30px 0;
+  text-align: center;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0px -5px 5px -5px rgba(0, 0, 0, 0.75); /* Добавляем небольшую тень */
+  align-self: flex-end;
+}
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+body > footer {
+    display: table-row;
+}
+#upper {
+    font-size: 18;
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
 }
