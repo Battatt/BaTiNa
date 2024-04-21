@@ -18,7 +18,6 @@ from forms.product_addition import ItemForm
 from forms.purchase_form import PurchaseForm
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
-from forms.partnership_form import PartnershipShip
 from dotenv import load_dotenv
 import requests
 import jinja2
@@ -29,6 +28,7 @@ import logging
 
 
 logger = logging.getLogger(__name__)
+
 
 def default_error_responder(request_limit: RequestLimit):
     error_template = jinja2.Environment().from_string(
@@ -68,10 +68,19 @@ api_app.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
 api_app.add_resource(item_resource.ItemResource, '/api/item/<int:id>')
 api_app.add_resource(item_resource.ItemListResource, '/api/items')
 limiter.limit("1/second")(user_resource.UserResource)  # Don't work
-api_app.add_resource(validate_location.LocationResource, '/api/location/<string:address>')
 api_app.add_resource(validate_location.GeoIpResource, '/api/geoip/<string:ip>')
-api_app.add_resource(validate_location.PostOfficeResource, '/api/post_office/<string:postal_code>')
 admin_key = "123456"
+
+
+@limiter.limit("5/second")
+def check_ip():
+    ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    if "," in ip:
+        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip.split(",")[0]}')
+        if ip_response.status_code == 200:
+            if ip_response.json().get("country", None) not in ["RU", None]:
+                return abort(404)
+    return
 
 
 @limiter.limit("5/second")
@@ -99,21 +108,16 @@ def get_all_items():
 
 @app.route('/')
 def index():
+    check_ip()
     items = get_all_items()["items"] if get_all_items()["items"] else []
-    if current_user.is_authenticated:
-        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
-        if response.status_code == 200:
-            navbar_data = get_navbar_data(current_user.user_id)
-            return render_template("index.html", title='Batina — интернет магазин',
-                                   navbar_data=navbar_data, items=items)
-        else:
-            abort(404)
-    return render_template("index.html", title='Batina — интернет магазин', items=items)
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
+    return render_template("index.html", title='Batina — интернет магазин', navbar_data=navbar_data, items=items)
 
 
 @app.route("/product/<int:id>")
-def product_page(id):
-    response = requests.get(f'http://{HOST}:{PORT}/api/item/{id}')
+def product_page(item_id):
+    check_ip()
+    response = requests.get(f'http://{HOST}:{PORT}/api/item/{item_id}')
     if response.status_code == 200:
         data = response.json()
         item = dict()
@@ -123,13 +127,8 @@ def product_page(id):
             else:
                 item[key] = value
     else:
-        abort(404)
-    if current_user.is_authenticated:
-        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
-        if response.status_code == 200:
-            navbar_data = get_navbar_data(current_user.user_id)
-        else:
-            abort(404)
+        return abort(404)
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     if item:
         return render_template("product_page.html", title=item["name"], navbar_data=navbar_data,
                                item=item)
@@ -139,8 +138,9 @@ def product_page(id):
 
 @login_required
 @app.route("/purchase/<int:id>", methods=['GET', 'POST'])
-def purchase_form(id):
-    response = requests.get(f'http://{HOST}:{PORT}/api/item/{id}')
+def purchase_form(item_id):
+    check_ip()
+    response = requests.get(f'http://{HOST}:{PORT}/api/item/{item_id}')
     if response.status_code == 200:
         data = response.json()
         item = dict()
@@ -150,13 +150,7 @@ def purchase_form(id):
             else:
                 item[key] = value
     else:
-        abort(404)
-    if current_user.is_authenticated:
-        response = requests.get(f'http://{HOST}:{PORT}/api/profile/{current_user.user_id}')
-        if response.status_code == 200:
-            navbar_data = get_navbar_data(current_user.user_id)
-        else:
-            abort(404)
+        return abort(404)
     if item:
         form = PurchaseForm()
         if form.validate_on_submit():
@@ -172,12 +166,12 @@ def purchase_form(id):
                     current_item.update({"amount": item["amount"] - 1, "is_visible": is_visible})
                 else:
                     abort(404)
-                order = Order(customer=current_user.user_id, content=item["content"], )
+                order = Order(customer=current_user.user_id, content=item["content"])  # type: ignore[call-arg]
                 db_sess.add(order)
                 db_sess.commit()
                 return redirect("/")
         return render_template("purchase_form.html", form=form, title=item["name"],
-                               navbar_data=navbar_data,
+                               navbar_data=get_navbar_data(current_user.user_id),
                                item=item)
     else:
         abort(404)
@@ -197,6 +191,7 @@ def load_user(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    check_ip()
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -219,6 +214,7 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    check_ip()
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -231,30 +227,6 @@ def register():
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
-        loc_response = requests.get(f'http://{HOST}:{PORT}/api/location/{form.address.data}')
-        ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-        if "," in ip:
-            ip = ip.split(",")[0]
-        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip}')
-        if loc_response.status_code == 200 and "status" not in loc_response.json() and \
-            len(loc_response.json()["results"]) and ip_response.status_code == 200 and \
-                "status" not in ip_response.json():  # If true, then the API worked properly
-            loc_json, ip_json = loc_response.json(), ip_response.json()
-            if loc_json["results"][0]["status"] >= 0.5 and \
-                    (ip == "127.0.0.1" or
-                     loc_json["results"][0]["postcode"][:3] == ip_json["postcode"][:3]):
-                address = loc_json["results"][0]["formatted_address"]
-                post_resp = requests.get(f'http://{HOST}:{PORT}/api/post_office/{loc_json["results"][0]["postcode"]}')
-                if post_resp.status_code == 200 and "status" not in post_resp.json():
-                    post_office_address = post_resp.json()["address"]
-                else:
-                    post_office_address = address
-            else:
-                return render_template('register.html', title='Регистрация',
-                                       form=form, message="Введен неккоректный адрес")
-        else:
-            return render_template('register.html', title='Регистрация',
-                                   form=form, message="Произошла ошибка с проверкой адреса. Повторите позже")
         avatar, banner = form.avatar.data.read(), form.banner.data.read()
         if not avatar:
             with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
@@ -265,13 +237,12 @@ def register():
         while user_table.filter(User.user_id == (user_id := int.from_bytes(random.randbytes(4), "little"))).first():
             # type: ignore[call-arg]
             pass
+        ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
         user = User(
             name=form.name.data,  # type: ignore[call-arg]
             email=form.email.data,  # type: ignore[call-arg]
             birthday=form.birthday.data,  # type: ignore[call-arg]
-            address=address,  # type: ignore[call-arg]
-            post_office_address=post_office_address,  # type: ignore[call-arg]
-            ip=ip,  # type: ignore[call-arg]
+            ip=ip.split(",")[0] if "," in ip else ip,  # type: ignore[call-arg]
             profile_photo=avatar,  # type: ignore[call-arg]
             profile_banner=banner,  # type: ignore[call-arg]
             user_id=user_id  # type: ignore[call-arg]
@@ -285,6 +256,7 @@ def register():
 
 @app.route("/profile/<int:user_id>")
 def profile(user_id):
+    check_ip()
     response = requests.get(f'http://{HOST}:{PORT}/api/profile/{user_id}')
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     if response.status_code == 200 and "status" not in response.json():
@@ -303,22 +275,13 @@ def profile(user_id):
 @login_required
 @app.route("/user_delete/<int:user_id>")
 def delete_profile(user_id):
-    if current_user.is_authenticated and current_user.user_id == user_id:
+    if current_user.user_id == user_id:
         if True:  # ДОБАВИТЬ ОБРАБОТКУ НЕЗАБРАННЫХ ТОВАРОВ
             pass
         response = requests.delete(f'http://{HOST}:{PORT}/api/profile/{user_id}')
         if response.status_code == 200 and "status" not in response.json():
             return redirect("/")
     return abort(401)
-
-
-@app.route("/partnership", methods=['GET', 'POST'])
-def partnership():
-    form = PartnershipShip()
-    if form.validate_on_submit():
-        return redirect("/")
-    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
-    return render_template("partnership.html", title="ПАРТНЁРСТВО", form=form, navbar_data=navbar_data)
 
 
 @app.route('/agree')
@@ -414,15 +377,15 @@ def add_products():
         adder_id = current_user.user_id
         is_visible = form.is_visible.data
         item = Item(
-            name=name,
-            content=content,
-            seller_id=adder_id,
-            description=description,
-            category=category,
-            image=image,
-            amount=amount,
-            price=price,
-            is_visible=is_visible,
+            name=name,  # type: ignore[call-arg]
+            content=content,  # type: ignore[call-arg]
+            seller_id=adder_id,  # type: ignore[call-arg]
+            description=description,  # type: ignore[call-arg]
+            category=category,  # type: ignore[call-arg]
+            image=image,  # type: ignore[call-arg]
+            amount=amount,  # type: ignore[call-arg]
+            price=price,  # type: ignore[call-arg]
+            is_visible=is_visible,  # type: ignore[call-arg]
         )
         db_sess = db_session.create_session()
         db_sess.add(item)
