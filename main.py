@@ -80,7 +80,7 @@ admin_key = "123456"
 def check_ip():
     ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
     if "," in ip:
-        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip.splаit(",")[0]}')
+        ip_response = requests.get(f'http://{HOST}:{PORT}/api/geoip/{ip.split(",")[0]}')
         if ip_response.status_code == 200:
             if ip_response.json().get("country", None) not in ["RU", None]:
                 return abort(404)
