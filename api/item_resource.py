@@ -16,7 +16,7 @@ class ItemResource(Resource):
         session = data.db_session.create_session()
         items = session.query(data.item.Item).filter(data.item.Item.id == id).first()  # type:ignore[call-arg]
         return jsonify({'user': {'id': items.id, 'seller_id': items.seller_id, 'name': items.name,
-                                 'description': items.description, 'content': items.content,
+                                 'description': items.description,
                                  'price': items.price, 'image': items.image.hex(), 'amount': items.amount,
                                  'category': items.category, 'is_visible': items.is_visible}})
 

@@ -25,8 +25,12 @@
             {{ form.card_owner.label }}<br>
             {{ form.card_owner(class="form-control", placeholder="BABASHA BATINA") }}<br>
         </div>
+        <div class="input-box">
+            <label for="quantity">Количество товара (от 1 до {{ item["amount"] }}):</label><br>
+            <input type="number" id="quantity" name="quantity" class="form-control" min="1" max="{{ item['amount'] }}" required><br>
+            </div>
         <div class="remember-forgot">{{ form.acceptation(type="checkbox") }} {{ form.acceptation.label }}<a id="agree" href="/agree">Соглашение</a></div>
-        <button type="submit" class="btn">Оплатить{{ item["price"] }}</button>
+        <button type="submit" class="btn">Оплатить</button>
         <div class="register-link">{{ message }}</div>
     </form>
     </div>

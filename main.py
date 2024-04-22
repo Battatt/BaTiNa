@@ -5,8 +5,10 @@ from flask_limiter import Limiter, RequestLimit
 from flask_limiter.util import get_remote_address
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized, RateLimited
 from discord_webhook import DiscordWebhook, DiscordEmbed
+from generator import *
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
+from api import review_resource
 from api import user_resource
 from api import item_resource
 from api import orders_resource
@@ -15,6 +17,7 @@ from data import db_session
 from data.order import Order
 from data.user import User
 from data.item import Item
+from data.review import Review
 from forms.admin_form import AdminForm
 from forms.product_addition import ItemForm
 from forms.purchase_form import PurchaseForm
@@ -27,9 +30,6 @@ import jinja2
 import base64
 import random
 import os
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 def default_error_responder(request_limit: RequestLimit):
@@ -66,6 +66,8 @@ discord = DiscordOAuth2Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api_app = Api(app)
+api_app.add_resource(review_resource.ReviewResource, '/api/review/<int:id>')
+api_app.add_resource(review_resource.ReviewListResource, '/api/reviews')
 api_app.add_resource(orders_resource.OrdersList, '/api/orders_list')
 api_app.add_resource(orders_resource.OrdersResource, '/api/orders/<int:id>')
 api_app.add_resource(user_resource.UserResource, '/api/profile/<int:user_id>')
@@ -161,6 +163,22 @@ def get_orders_for_user(user_id):
     return None
 
 
+@limiter.limit("5/second")
+def reviews_for_item(item_id):
+    response = requests.get(f'http://{HOST}:{PORT}/api/reviews')
+    if response.status_code == 200:
+        in_data = response.json()
+        reviews_data = []
+        for review in in_data["reviews"]:
+            if review["item_id"] == item_id:
+                review_dict = {"id": review["id"], "customer": review["customer"], "item_id": review["item_id"],
+                               "avatar": review["avatar"], "name": review["name"],
+                               "text": review["text"], "date": review["date"]}
+                reviews_data.append(review_dict)
+        return reviews_data
+    return None
+
+
 @app.route("/orders/<int:user_id>")
 @login_required
 def orders_page(user_id):
@@ -172,12 +190,17 @@ def orders_page(user_id):
                            navbar_data=navbar_data)
 
 
-@app.route("/product/<int:item_id>")
+@app.route("/product/<int:item_id>",  methods=['GET', 'POST'])
 def product_page(item_id):
     check_ip()
     response = requests.get(f'http://{HOST}:{PORT}/api/item/{item_id}')
+    reviews = reviews_for_item(item_id)
+    if reviews is None:
+        reviews = []
     if response.status_code == 200:
         data = response.json()
+        if 'status' in data.keys():
+            return abort(404)
         item = dict()
         for key, value in data["user"].items():
             if key == "image":
@@ -189,7 +212,7 @@ def product_page(item_id):
     navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
     if item:
         return render_template("product_page.html", title=item["name"], navbar_data=navbar_data,
-                               item=item)
+                               item=item, reviews=reviews)
     else:
         abort(404)
 
@@ -221,7 +244,6 @@ def purchase_form(item_id):
             if len(''.join(str(card_number).split(' '))) == 16 and len(cvc) == 3 and str(cvc).isdigit() and card_owner:
                 pass
             else:
-                print(cvc)
                 return render_template("purchase_form.html", form=form, title=item["name"],
                                        navbar_data=get_navbar_data(current_user.user_id),
                                        item=item, message='Ошибка в заполнении данных карты')
@@ -252,19 +274,33 @@ def purchase_form(item_id):
                                        navbar_data=get_navbar_data(current_user.user_id),
                                        item=item, message='Неправильно указан срок действия')
             if acceptation:
-                """Здесь должна быть проверка на то, что человек оплатил товар"""
+                category = item["category"]
+                quantity = int(request.form['quantity'])
                 db_sess = db_session.create_session()
                 items_table = db_sess.query(Item)
                 current_item = items_table.filter(Item.id == item["id"])
                 if current_item:
-                    is_visible = False if item["amount"] - 1 == 0 else True
-                    current_item.update({"amount": item["amount"] - 1, "is_visible": is_visible})
+                    delta = 0
+                    for i in range(quantity):
+                        if category == "Telegram":
+                            content = telegram_key_generator()
+                        elif category == "Discord":
+                            content = telegram_key_generator()
+                        elif category == "Roblox":
+                            content = robux_redeem_code_generator()
+                        elif category == "Steam":
+                            content = steam_keys_generator()
+                        else:
+                            content = any_code_generator()
+                        order = Order(customer=current_user.user_id, name=item["name"],  # type: ignore[call-arg]
+                                      content=content)  # type: ignore[call-arg]
+                        delta += 1
+                        db_sess.add(order)
+                    is_visible = False if item["amount"] - delta == 0 else True
+                    current_item.update({"amount": item["amount"] - delta, "is_visible": is_visible})
+                    db_sess.commit()
                 else:
                     abort(404)
-                order = Order(customer=current_user.user_id, name=item["name"],  # type: ignore[call-arg]
-                              content=item["content"])  # type: ignore[call-arg]
-                db_sess.add(order)
-                db_sess.commit()
                 return redirect("/")
         return render_template("purchase_form.html", form=form, title=item["name"],
                                navbar_data=get_navbar_data(current_user.user_id),
@@ -490,7 +526,6 @@ def redact_product(item_id):
         form.amount.data = item["amount"]
         form.category.data = item["category"]
         form.is_visible.data = item["is_visible"]
-        form.content.data = item["content"]
         form.description.data = item["description"]
     if form.validate_on_submit():
         image = form.image.data.read()
@@ -505,7 +540,6 @@ def redact_product(item_id):
         item.category = form.category.data
         item.image = image
         item.price = form.price.data
-        item.content = form.content.data
         item.amount = form.amount.data
         item.is_visible = form.is_visible.data
         db_sess.commit()
@@ -525,7 +559,6 @@ def add_products():
         price = form.price.data
         amount = form.amount.data
         image = form.image.data.read()
-        content = form.content.data
         if not image:
             with open(f"static/img/profile/avatar_{random.choice(['red', 'green', 'blue'])}.jpg", "rb") as image:
                 image = bytearray(image.read())
@@ -533,7 +566,6 @@ def add_products():
         is_visible = form.is_visible.data
         item = Item(
             name=name,  # type: ignore[call-arg]
-            content=content,  # type: ignore[call-arg]
             seller_id=adder_id,  # type: ignore[call-arg]
             description=description,  # type: ignore[call-arg]
             category=category,  # type: ignore[call-arg]
@@ -582,6 +614,43 @@ def add_admin():
                                    navbar_data=navbar_data, form=form, message="Пользователь не найден")
     return render_template("admin_form.html", title="Добавление админа",
                            navbar_data=navbar_data, form=form)
+
+
+@login_required
+@app.route("/submit_review/<int:item_id>", methods=["POST"])
+def submit_review(item_id):
+    navbar_data = get_navbar_data(current_user.user_id) if current_user.is_authenticated else None
+    if navbar_data is None:
+        return abort(401)
+
+    if request.method == 'POST':
+        review_text = request.form['review_text']
+
+        db_sess = db_session.create_session()
+        review = Review(
+            customer=current_user.user_id,
+            item_id=item_id,
+            avatar=navbar_data['profile_photo'],
+            name=navbar_data["name"],
+            text=review_text,
+        )
+        db_sess.add(review)
+        db_sess.commit()
+
+    return redirect(f'/product/{item_id}')
+
+
+@app.route("/delete_review/<int:review_id>", methods=['GET', 'POST'])
+@login_required
+def review_delete(review_id):
+    db_sess = db_session.create_session()
+    review = db_sess.query(Review).filter(Review.id == review_id).first()  # type: ignore[call-arg]
+    if review:
+        db_sess.delete(review)
+        db_sess.commit()
+    else:
+        return abort(404)
+    return redirect("/")
 
 
 @app.errorhandler(500)

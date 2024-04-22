@@ -11,7 +11,6 @@ class Item(SqlAlchemyBase, SerializerMixin):
     seller_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.user_id"))
     seller = sqlalchemy.orm.relationship('User')
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    content = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     price = sqlalchemy.Column(sqlalchemy.Integer)
     amount = sqlalchemy.Column(sqlalchemy.Integer)
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
