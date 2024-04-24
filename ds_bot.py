@@ -61,4 +61,21 @@ async def add_admin(inter: disnake.ApplicationCommandInteraction, **data):
     return await inter.send(f"У вас недостаточно прав для данного действия", ephemeral=True)
 
 
+@bot.slash_command(description="Лишает пользователя на сайте прав администратора",
+                   guild_ids=[1226486189448495225],
+                   options=[disnake.Option("id_пользователя", "ID пользователя на сайте",
+                                           type=disnake.OptionType.integer, required=True)])
+async def remove_admin_from_site(inter: disnake.ApplicationCommandInteraction, **kwargs):
+    await inter.response.defer(ephemeral=True)
+    guild = bot.get_guild(1226486189448495225)
+    owner_role = guild.get_role(1226488907084861450)
+    if owner_role in inter.user.roles:
+        response = requests.get(f"http://{HOST}:{PORT}/remove_admin_ds/{kwargs['id_пользователя']}/{admin_key}")
+        if response.status_code == 200:
+            return await inter.send(f"Пользователь с user_id: {kwargs['id_пользователя']} "
+                                    f"успешно лишен прав администратора", ephemeral=True)
+        return await inter.send(f"Ошибка при повышении статуса пользователя", ephemeral=True)
+    return await inter.send(f"У вас недостаточно прав для данного действия", ephemeral=True)
+
+
 bot.run(os.getenv("DISCORD_BOT_TOKEN"))

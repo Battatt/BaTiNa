@@ -677,6 +677,19 @@ def admin_update_from_bot(user_id, key):
         return abort(401)
 
 
+@app.route("/remove_admin_ds/<int:user_id>/<string:key>")
+def remove_admin_from_bot(user_id, key):
+    if key == admin_key:
+        response = requests.post(f"http://{HOST}:{PORT}/api/admin/{user_id}")
+        if response.status_code == 200:
+            result = response.json()
+            if "remove" in result.get("status", "0"):
+                return jsonify({"status": "Excellent"})
+        return abort(404)
+    else:
+        return abort(401)
+
+
 def main():
     db_session.global_init("db/batina.db")
     limiter.init_app(app)
