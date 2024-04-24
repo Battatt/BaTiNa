@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, abort, request, make_response, url_for
+from flask import Flask, render_template, redirect, abort, request, make_response, url_for, jsonify
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from flask_restful import Api
 from flask_limiter import Limiter, RequestLimit
@@ -13,6 +13,7 @@ from api import user_resource
 from api import item_resource
 from api import orders_resource
 from api import validate_location
+from api import admin_resource
 from data import db_session
 from data.order import Order
 from data.user import User
@@ -62,10 +63,12 @@ app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
 app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
 app.config["DISCORD_REDIRECT_URI"] = f"http://{HOST}:{PORT}/oauth_callback"
 app.config["DISCORD_BOT_TOKEN"] = os.getenv("DISCORD_BOT_TOKEN")
+admin_key = os.getenv("ADMIN_KEY")
 discord = DiscordOAuth2Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api_app = Api(app)
+api_app.add_resource(admin_resource.AdminResource, '/api/admin/<int:user_id>')
 api_app.add_resource(review_resource.ReviewResource, '/api/review/<int:id>')
 api_app.add_resource(review_resource.ReviewListResource, '/api/reviews')
 api_app.add_resource(orders_resource.OrdersList, '/api/orders_list')
@@ -75,7 +78,6 @@ api_app.add_resource(item_resource.ItemResource, '/api/item/<int:id>')
 api_app.add_resource(item_resource.ItemListResource, '/api/items')
 limiter.limit("1/second")(user_resource.UserResource)  # Don't work
 api_app.add_resource(validate_location.GeoIpResource, '/api/geoip/<string:ip>')
-admin_key = "123456"
 
 
 @limiter.limit("5/second")
@@ -660,6 +662,19 @@ def internal_error(error):
     db_sess = db_session.create_session()
     db_sess.rollback()"""
     return render_template('500.html', navbar_data=navbar_data), 500
+
+
+@app.route("/ds_bot_admin/<int:user_id>/<string:key>")
+def admin_update_from_bot(user_id, key):
+    if key == admin_key:
+        response = requests.get(f"http://{HOST}:{PORT}/api/admin/{user_id}")
+        if response.status_code == 200:
+            result = response.json()
+            if "added" in result.get("status", "0"):
+                return jsonify({"status": "Excellent"})
+        return abort(404)
+    else:
+        return abort(401)
 
 
 def main():
